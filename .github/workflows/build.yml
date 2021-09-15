@@ -60,53 +60,53 @@ jobs:
           check_name: "Inspec Test Results"
           files: data-sync-inspec.xml
 
-      # - name: Extract branch name
-      #   run: |
-      #     if [ "${{ github.head_ref }}" == "" ]; then
-      #       echo BRANCH_NAME=main >> $GITHUB_ENV
-      #     else
-      #       echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
-      #     fi
-      #   id: extract_branch
+      - name: Extract branch name
+        run: |
+          if [ "${{ github.head_ref }}" == "" ]; then
+            echo BRANCH_NAME=main >> $GITHUB_ENV
+          else
+            echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
+          fi
+        id: extract_branch
 
-      # - name: Bump version
-      #   id: bump_version
-      #   uses: anothrNick/github-tag-action@1.33.0
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     INITIAL_VERSION: 1.0.0
-      #     DEFAULT_BUMP: minor
-      #     PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
-      #     RELEASE_BRANCHES: main
-      #     WITH_V: true
+      - name: Bump version
+        id: bump_version
+        uses: anothrNick/github-tag-action@1.33.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INITIAL_VERSION: 1.0.0
+          DEFAULT_BUMP: minor
+          PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
+          RELEASE_BRANCHES: main
+          WITH_V: true
 
-      # - name: Configure AWS Credentials
-      #   uses: aws-actions/configure-aws-credentials@v1
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
-      #     aws-region: eu-west-1
-      #     role-to-assume: arn:aws:iam::311462405659:role/sirius-actions-ci
-      #     role-duration-seconds: 3600
-      #     role-session-name: GitHubActions
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::311462405659:role/sirius-actions-ci
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
 
-      # - name: ECR Login
-      #   id: login-ecr
-      #   uses: aws-actions/amazon-ecr-login@v1
-      #   with:
-      #     registries: 311462405659
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registries: 311462405659
 
-      # - name: Push Container
-      #   env:
-      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      #     DATA_SYNC_ECR_REPOSITORY: sirius/data-sync
-      #   run: |
-      #     docker tag pdf_service:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
-      #     docker tag pdf_service:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:latest
-      #     if [ $BRANCH_NAME == "main" ]; then
-      #       docker tag pdf_service:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:main-${{ steps.bump_version.outputs.tag }}
-      #       # We want all of the tags pushed
-      #       docker push --all-tags $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY
-      #     else
-      #       docker push $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
-      #     fi
+      - name: Push Container
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          DATA_SYNC_ECR_REPOSITORY: sirius/data-sync
+        run: |
+          docker tag data-sync:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+          if [ $BRANCH_NAME == "main" ]; then
+            docker tag data-sync:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:latest
+            docker tag data-sync:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:main-${{ steps.bump_version.outputs.tag }}
+            # We want all of the tags pushed
+            docker push --all-tags $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY
+          else
+            docker push $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+          fi
