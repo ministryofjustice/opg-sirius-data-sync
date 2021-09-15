@@ -15,7 +15,7 @@ defaults:
 
 jobs:
   build:
-    name: Build, Test & Push Image
+    name: Build, Test & Publish Image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -29,9 +29,19 @@ jobs:
         with:
           image-ref: data-sync:latest
           severity: 'HIGH,CRITICAL'
+          format: 'template'
+          template: '@/contrib/sarif.tpl'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
 
       - name: Install Inspec for Image Tests
         uses: actionshub/chef-install@main
+        if: always()
         with:
           channel: current
           project: inspec
@@ -47,6 +57,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
         with:
+          check_name: "Inspec Test Results"
           files: data-sync-inspec.xml
 
       # - name: Extract branch name
