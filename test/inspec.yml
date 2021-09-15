@@ -1,0 +1,9 @@
+---
+name: AWS CLI and Database Sync Scripts
+title: AWS CLI and Database Sync Scripts
+maintainer: OPG
+copyright: Copyright (c) 2019 Crown Copyright (Ministry of Justice)
+copyright_email: opgteam@digital.justice.gov.uk
+license: MIT
+summary: An InSpec Compliance Profile for OPG Supervision Application Container
+version: 0.1.0
