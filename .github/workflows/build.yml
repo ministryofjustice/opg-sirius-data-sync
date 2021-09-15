@@ -14,7 +14,7 @@ defaults:
   shell: bash
 
 jobs:
-  docker-build:
+  build:
     name: Build, Test & Push Image
     runs-on: ubuntu-latest
     steps:
@@ -22,7 +22,7 @@ jobs:
 
       - name: Build Container
         run: |
-          docker build --file Dockerfile --tag data-sync:latest .
+          make
 
       - name: Trivy Image Vulnerability Scanner
         uses: aquasecurity/trivy-action@master
@@ -30,14 +30,27 @@ jobs:
           image-ref: data-sync:latest
           severity: 'HIGH,CRITICAL'
 
-      - name: Extract branch name
+      - name: Install Inspec for Image Tests
+        uses: actionshub/chef-install@main
+        with:
+          channel: current
+          project: inspec
+
+      - name: Run Inspec Tests
+        env:
+          CHEF_LICENSE: accept
         run: |
-          if [ "${{ github.head_ref }}" == "" ]; then
-            echo BRANCH_NAME=main >> $GITHUB_ENV
-          else
-            echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
-          fi
-        id: extract_branch
+          make test
+          make cleanup
+
+      # - name: Extract branch name
+      #   run: |
+      #     if [ "${{ github.head_ref }}" == "" ]; then
+      #       echo BRANCH_NAME=main >> $GITHUB_ENV
+      #     else
+      #       echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
+      #     fi
+      #   id: extract_branch
 
       # - name: Bump version
       #   id: bump_version
