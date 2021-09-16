@@ -38,7 +38,7 @@ payload = {
   "type": "s3",
   "settings": {
     "bucket": f"{REPO_BUCKET}",
-    "region": "eu-west",
+    "region": "eu-west-1",
     "role_arn": f"arn:aws:iam::{ACCOUNT_ID}:role/{IAM_ROLE_NAME}",
     "server_side_encryption": "true"
   }
