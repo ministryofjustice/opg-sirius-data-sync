@@ -10,6 +10,28 @@ if [ "$ENVIRONMENT_NAME" = "production" ]; then
     exit 1
 fi
 
+INDEX=persons
+check_elastic_restore() {
+    COMPLETED=1
+    for SHARD in $(curl -s $ES_VPC_ENDPOINT/$INDEX/_recovery?pretty|jq -r '.'$INDEX'.shards[].index.files.percent')
+    do
+        if [ "$SHARD" != "100.0%" ];
+        then
+            COMPLETED=0
+        fi
+    done
+    return $COMPLETED
+}
+
+wait_for_elastic_to_restore() {
+    while check_elastic_restore
+    do
+        echo "INFO - Waiting for Elasticsearch Snapshot Restore to Complete..."
+        sleep 60
+    done
+    echo "INFO - Elasticsearch Snapshot Restore Complete"
+}
+
 echo "INFO - Checking if sync-snapshot exists..."
 if curl -fsS -XGET "https://$ES_VPC_ENDPOINT/_snapshot/$ES_SNAPSHOT_REPO/sync-snapshot?pretty";
 then
@@ -29,12 +51,14 @@ else
 fi
 
 echo "INFO - Restoring Indices from snapshot"
-if curl -fsS -XPOST "https://$ES_VPC_ENDPOINT/_snapshot/$ES_SNAPSHOT_REPO/sync-snapshot/_restore?wait_for_completion=true&pretty";
+if curl -fsS -XPOST "https://$ES_VPC_ENDPOINT/_snapshot/$ES_SNAPSHOT_REPO/sync-snapshot/_restore";
 then
-    echo "INFO - Restore of snapshot complete."
+    echo "INFO - Restoring Elasticsearch Snapshot"
 else
     echo "ERROR - Restore of snapshot failed."
     exit 1
 fi
+
+wait_for_elastic_to_restore
 
 echo "INFO - Restore of Elasticsearch complete."
