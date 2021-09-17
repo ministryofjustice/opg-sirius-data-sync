@@ -20,7 +20,7 @@ else
 fi
 
 echo "INFO - Deleting Existing Indices..."
-if curl -fsS -XDELETE "https://$ES_VPC_ENDPOINT/_all?wait_for_completion=true&pretty";
+if curl -fsS -XDELETE "https://$ES_VPC_ENDPOINT/_all";
 then
     echo "INFO - Indices deleted."
 else
