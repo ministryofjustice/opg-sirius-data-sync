@@ -12,6 +12,10 @@ control 'Database Sync' do
     it { should exist }
     its('mode') { should cmp '0644'}
   end
+  describe file('/app/common-multi-az.sh') do
+    it { should exist }
+    its('mode') { should cmp '0644'}
+  end
   describe file('/app/copy-shared-snapshot.sh') do
     it { should exist }
     its('mode') { should cmp '0755'}
@@ -57,6 +61,10 @@ control 'Database Sync' do
     its('mode') { should cmp '0755'}
   end
   describe file('/app/restore-es-snapshot.sh') do
+    it { should exist }
+    its('mode') { should cmp '0755'}
+  end
+  describe file('/app/restore-global-cluster-from-snapshot.sh') do
     it { should exist }
     its('mode') { should cmp '0755'}
   end
