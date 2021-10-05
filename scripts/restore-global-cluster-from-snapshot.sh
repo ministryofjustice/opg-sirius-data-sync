@@ -152,7 +152,10 @@ wait_for_db_cluster_available $PRIMARY_REGION $PRIMARY_CLUSTER_ARN
 # Delete $PRIMARY_REGION cluster with final-snapshot
 check_for_and_delete_snapshot $PRIMARY_REGION $REGIONAL_CLUSTER-final-snapshot
 echo "INFO - Deleting Cluster: $PRIMARY_REGION $REGIONAL_CLUSTER"
-aws rds delete-db-cluster --region $PRIMARY_REGION --db-cluster-identifier $PRIMARY_CLUSTER_ARN --no-skip-final-snapshot --final-db-snapshot-identifier $REGIONAL_CLUSTER-final-snapshot
+aws rds delete-db-cluster --region $PRIMARY_REGION \
+    --db-cluster-identifier $PRIMARY_CLUSTER_ARN \
+    --no-skip-final-snapshot \
+    --final-db-snapshot-identifier $REGIONAL_CLUSTER-final-snapshot
 wait_for_snapshot_completion $PRIMARY_REGION $REGIONAL_CLUSTER-final-snapshot
 wait_for_db_cluster_deleted $PRIMARY_REGION $PRIMARY_CLUSTER_ARN
 

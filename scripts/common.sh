@@ -13,7 +13,7 @@ if [ -z "$DATABASE" ]; then
     exit 1
 fi
 
-if [ -z "$DATABASE_VERSION"]; then
+if [ -z "$DATABASE_VERSION" ]; then
   DATABASE_VERSION="10.14"
 fi
 
