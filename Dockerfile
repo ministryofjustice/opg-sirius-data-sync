@@ -11,9 +11,9 @@ RUN pip install --prefix=/install psycopg2
 FROM alpine:3
 
 COPY --from=builder /install/lib/python3.9/site-packages/ /usr/lib/python3.9/site-packages/
-COPY scripts /app
 WORKDIR /app/
 
+COPY scripts/requirements.txt /app/requirements.txt
 RUN apk --update --no-cache add \
   postgresql \
   python3 \
@@ -23,3 +23,5 @@ RUN apk --update --no-cache add \
   py3-pip \
   && pip install --no-cache-dir awscli -r requirements.txt \
   && rm -rf /var/cache/apk/* /root/.cache/pip/*
+
+COPY scripts /app

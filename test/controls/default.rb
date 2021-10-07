@@ -44,6 +44,10 @@ control 'Database Sync' do
     it { should exist }
     its('mode') { should cmp '0755'}
   end
+  describe file('/app/restore-database-cluster-from-snapshot.sh') do
+    it { should exist }
+    its('mode') { should cmp '0755'}
+  end
   describe file('/app/restore-database-from-snapshot-1-instance.sh') do
     it { should exist }
     its('mode') { should cmp '0755'}

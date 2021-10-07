@@ -1,13 +1,3 @@
-rename_db_instance() {
-    INSTANCE=$1
-    NEW_IDENTIFIER=$2
-    echo "INFO - Renaming $INSTANCE to $NEW_IDENTIFIER"
-    aws rds modify-db-instance \
-        --db-instance-identifier $INSTANCE \
-        --new-db-instance-identifier $NEW_IDENTIFIER \
-        --apply-immediately
-}
-
 delete_db_instance() {
     INSTANCE=$1
     echo "INFO - Deleting DB Instance $INSTANCE"
@@ -30,11 +20,11 @@ create_db_instance() {
         --no-auto-minor-version-upgrade \
         --promotion-tier 0 \
         --monitoring-interval 30 \
-        --monitoring-role-arn arn:aws:iam::492687888235:role/rds-monitoring-role \
+        --monitoring-role-arn "$MONITORING_ROLE" \
         --enable-performance-insights \
         --performance-insights-retention-period 7 \
         --tags \
-        Key=account,Value="$ENVIRONMENT_NAME" \
+        Key=account,Value="$ACCOUNT_NAME" \
         Key=application,Value="Sirius" \
         Key=business-unit,Value="OPG" \
         Key=environment-name,Value="$ENVIRONMENT_NAME" \
@@ -43,9 +33,6 @@ create_db_instance() {
         Key=owner,Value="opgteam@digital.justice.gov.uk" \
         Key=source-code,Value="https://github.com/ministryofjustice/opg-sirius-infrastructure"
 }
-
-BACKUP_CLUSTER=$DATABASE_CLUSTER-backup
-echo "INFO - BACKUP_CLUSTER set to $BACKUP_CLUSTER"
 
 LOCAL_SNAPSHOT=$DATABASE_CLUSTER-snapshot-for-restore
 echo "INFO - LOCAL_SNAPSHOT set to $LOCAL_SNAPSHOT"
