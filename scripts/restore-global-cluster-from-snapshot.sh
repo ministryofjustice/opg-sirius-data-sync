@@ -146,14 +146,14 @@ wait_for_db_instance_deleted $PRIMARY_REGION $REGIONAL_CLUSTER-2
 
 # Disable $PRIMARY_REGION cluster deletion protection
 echo "INFO - Removing Deletion Protection $PRIMARY_REGION $REGIONAL_CLUSTER"
-aws rds modify-db-cluster --region $PRIMARY_REGION --db-cluster-identifier $PRIMARY_CLUSTER_ARN --no-deletion-protection --apply-immediately
+aws rds modify-db-cluster --region $PRIMARY_REGION --db-cluster-identifier $REGIONAL_CLUSTER --no-deletion-protection --apply-immediately
 wait_for_db_cluster_available $PRIMARY_REGION $PRIMARY_CLUSTER_ARN
 
 # Delete $PRIMARY_REGION cluster with final-snapshot
 check_for_and_delete_snapshot $PRIMARY_REGION $REGIONAL_CLUSTER-final-snapshot
 echo "INFO - Deleting Cluster: $PRIMARY_REGION $REGIONAL_CLUSTER"
 aws rds delete-db-cluster --region $PRIMARY_REGION \
-    --db-cluster-identifier $PRIMARY_CLUSTER_ARN \
+    --db-cluster-identifier $REGIONAL_CLUSTER \
     --no-skip-final-snapshot \
     --final-db-snapshot-identifier $REGIONAL_CLUSTER-final-snapshot
 wait_for_snapshot_completion $PRIMARY_REGION $REGIONAL_CLUSTER-final-snapshot
@@ -262,7 +262,7 @@ echo "INFO - Create $DR_REGION $REGIONAL_CLUSTER from $GLOBAL_CLUSTER"
 aws rds create-db-cluster \
     --region $DR_REGION \
     --db-cluster-identifier $REGIONAL_CLUSTER \
-    --db-subnet-group-name data-persitance-subnet-preproduction-vpc \
+    --db-subnet-group-name $DR_SUBNET_GROUP \
     --deletion-protection \
     --enable-cloudwatch-logs-exports postgresql \
     --engine aurora-postgresql \
