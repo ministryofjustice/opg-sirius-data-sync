@@ -140,10 +140,10 @@ control 'Python Dependencies' do
   describe command('pip3 list | grep boto3') do
     its('exit_status') { should match 0 }
   end
-  describe command('pip3 list | grep "psycopg2          2"') do
+  describe command('pip3 list | grep "psycopg2           2"') do
     its('exit_status') { should match 0 }
   end
-  describe command('pip3 list | grep "requests          2"') do
+  describe command('pip3 list | grep "requests           2"') do
     its('exit_status') { should match 0 }
   end
   describe command('pip3 list | grep requests-aws4auth') do
