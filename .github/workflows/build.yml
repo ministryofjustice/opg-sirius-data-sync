@@ -24,7 +24,7 @@ jobs:
 
       - name: Build Container
         run: |
-          make
+          make build
 
       - name: Trivy Image Vulnerability Scanner
         uses: aquasecurity/trivy-action@master
@@ -138,7 +138,7 @@ jobs:
       - name: Push Tag to Parameter Store
         run: |
           aws ssm put-parameter --name "opg-sirius-data-sync-latest-green-build" --type "String" --value "${{ needs.build.outputs.tag}}" --overwrite --region=eu-west-1
-          
+
       - name: Trigger Dev Deploy
         shell: bash
         run: curl -u ${{ secrets.JENKINS_API_USER }}:${{ secrets.JENKINS_API_TOKEN }} "https://${{ secrets.JENKINS_URL }}/job/Sirius/job/Deploy_to_Development/build?token=${{ secrets.JENKINS_API_TOKEN_NAME }}&cause=Triggered+by+opg-sirius-data-sync"
