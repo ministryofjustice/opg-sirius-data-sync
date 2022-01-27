@@ -60,10 +60,6 @@ control 'Database Sync' do
     it { should exist }
     its('mode') { should cmp '0644'}
   end
-  describe file('/app/reindex-elasticsearch.py') do
-    it { should exist }
-    its('mode') { should cmp '0644'}
-  end
 end
 
 control 'AWS CLI' do
