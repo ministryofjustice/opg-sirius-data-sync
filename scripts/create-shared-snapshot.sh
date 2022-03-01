@@ -14,7 +14,12 @@ if [ -z "$SNAPSHOT_COPY_NAME" ]; then
   SNAPSHOT_COPY_NAME=$DATABASE_CLUSTER-snapshot-for-copy
 fi
 
+if [ -z "$KMS_KEY_ALIAS" ]; then
+  KMS_KEY_ALIAS=alias/rds-snapshot-reencryption-$ENVIRONMENT_NAME
+fi
+
 echo "INFO - SNAPSHOT_COPY_NAME set to $SNAPSHOT_COPY_NAME"
+echo "INFO - KMS_KEY_ALIAS set to $KMS_KEY_ALIAS"
 
 echo "INFO - Checking for automated snapshot of $DATABASE_CLUSTER"
 LATEST_SNAPSHOT=$(aws rds describe-db-cluster-snapshots \
@@ -36,7 +41,7 @@ echo "INFO - Creating snapshot copy $SNAPSHOT_COPY_NAME from snapshot $LATEST_SN
 aws rds copy-db-cluster-snapshot \
     --source-db-cluster-snapshot-identifier "$LATEST_SNAPSHOT" \
     --target-db-cluster-snapshot-identifier "$SNAPSHOT_COPY_NAME" \
-    --kms-key-id alias/rds-snapshot-reencryption-"$ENVIRONMENT_NAME"
+    --kms-key-id "$KMS_KEY_ALIAS"
 
 wait_for_snapshot_completion "$SNAPSHOT_COPY_NAME" 5
 
