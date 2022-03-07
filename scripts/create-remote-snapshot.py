@@ -15,7 +15,7 @@ remote_role_arn = os.environ.get('REMOTE_ROLE_ARN')
 my_config = Config(
         region_name = region_name,
     )
-logging.basicConfig(level = logging.INFO)
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
