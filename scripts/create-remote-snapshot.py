@@ -15,8 +15,8 @@ remote_role_arn = os.environ.get('REMOTE_ROLE_ARN')
 my_config = Config(
         region_name = region_name,
     )
+logging.basicConfig(level = logging.INFO)
 logger = logging.getLogger()
-logger.basicConfig(level=logging.INFO)
 logger.setLevel(logging.INFO)
 
 source_snapshot = (f'arn:aws:rds:{region_name}:{account_id}:cluster-snapshot:{database_name}-{environment_name}-snapshot-for-backup')
