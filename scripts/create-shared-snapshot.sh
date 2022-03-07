@@ -10,8 +10,16 @@ if [ -z "$TARGET_ACCOUNT_ID" ]; then
     exit 1
 fi
 
-SNAPSHOT_COPY=$DATABASE_CLUSTER-snapshot-for-copy
-echo "INFO - SNAPSHOT_COPY set to $SNAPSHOT_COPY"
+if [ -z "$SNAPSHOT_COPY_NAME" ]; then
+  SNAPSHOT_COPY_NAME=$DATABASE_CLUSTER-snapshot-for-copy
+fi
+
+if [ -z "$KMS_KEY_ALIAS" ]; then
+  KMS_KEY_ALIAS=alias/rds-snapshot-reencryption-$ENVIRONMENT_NAME
+fi
+
+echo "INFO - SNAPSHOT_COPY_NAME set to $SNAPSHOT_COPY_NAME"
+echo "INFO - KMS_KEY_ALIAS set to $KMS_KEY_ALIAS"
 
 echo "INFO - Checking for automated snapshot of $DATABASE_CLUSTER"
 LATEST_SNAPSHOT=$(aws rds describe-db-cluster-snapshots \
@@ -27,19 +35,19 @@ else
     echo "INFO - Latest snapshot found: $LATEST_SNAPSHOT"
 fi
 
-check_for_and_delete_snapshot "$SNAPSHOT_COPY"
+check_for_and_delete_snapshot "$SNAPSHOT_COPY_NAME"
 
-echo "INFO - Creating snapshot copy $SNAPSHOT_COPY from snapshot $LATEST_SNAPSHOT."
+echo "INFO - Creating snapshot copy $SNAPSHOT_COPY_NAME from snapshot $LATEST_SNAPSHOT."
 aws rds copy-db-cluster-snapshot \
     --source-db-cluster-snapshot-identifier "$LATEST_SNAPSHOT" \
-    --target-db-cluster-snapshot-identifier "$SNAPSHOT_COPY" \
-    --kms-key-id alias/rds-snapshot-reencryption-"$ENVIRONMENT_NAME"
+    --target-db-cluster-snapshot-identifier "$SNAPSHOT_COPY_NAME" \
+    --kms-key-id "$KMS_KEY_ALIAS"
 
-wait_for_snapshot_completion "$SNAPSHOT_COPY" 5
+wait_for_snapshot_completion "$SNAPSHOT_COPY_NAME" 5
 
 echo "INFO - Modifying snapshot to be shared with account $TARGET_ACCOUNT_ID"
 aws rds modify-db-cluster-snapshot-attribute \
-    --db-cluster-snapshot-identifier "$SNAPSHOT_COPY" \
+    --db-cluster-snapshot-identifier "$SNAPSHOT_COPY_NAME" \
     --attribute-name restore \
     --values-to-add "$TARGET_ACCOUNT_ID"
 echo "INFO - Modification complete."
