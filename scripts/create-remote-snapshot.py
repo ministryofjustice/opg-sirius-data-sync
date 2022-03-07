@@ -1,6 +1,5 @@
 from botocore.config import Config
 import boto3
-import botocore
 import logging
 import os
 import sys
@@ -32,30 +31,30 @@ session = boto3.Session(aws_access_key_id=response['Credentials']['AccessKeyId']
 
 remote_rds = session.client('rds', config=my_config)
 
-logger.info('Script starting.')
+logger.info("Script starting.")
 
 try:
-    logger.info(f'Checking source snapshot {source_snapshot} exists.')
+    logger.info(f"Checking source snapshot {source_snapshot} exists")
     remote_rds.describe_db_cluster_snapshots(
         DBClusterSnapshotIdentifier=source_snapshot,
         IncludeShared=True
     )
-    logger.info('Source snapshot found.')
+    logger.info("Source snapshot found.")
 except remote_rds.exceptions.DBClusterSnapshotNotFoundFault:
-    logger.error('Source snapshot not found.')
-    sys.exit('Source snapshot not found.')
+    logger.error('Source snapshot not found')
+    sys.exit('Source snapshot not found')
 else:
     try:
-        logger.info(f'Checking remote snapshot {remote_snapshot} exists.')
+        logger.info(f"Checking remote snapshot {remote_snapshot} exists")
         
         remote_rds.describe_db_cluster_snapshots(
             DBClusterSnapshotIdentifier=remote_snapshot,
             IncludeShared=True
         )
     except remote_rds.exceptions.DBClusterSnapshotNotFoundFault:
-        logger.info('Remote snapshot not found.')
+        logger.info("Remote snapshot not found.")
     else:
-        logger.info('Deleting remote snapshot.')
+        logger.info("Deleting remote snapshot")
 
         response = remote_rds.delete_db_cluster_snapshot(
             DBClusterSnapshotIdentifier=remote_snapshot
@@ -67,10 +66,10 @@ else:
             DBClusterSnapshotIdentifier=remote_snapshot,
         )
 
-        logger.info(f'Remote snapshot {remote_snapshot} deleted.')
+        logger.info(f"Remote snapshot {remote_snapshot} deleted")
 
     
-    logger.info(f'Creating remote snapshot copy of {source_snapshot}')
+    logger.info(f"Creating remote snapshot copy of {source_snapshot}")
     
     response = remote_rds.copy_db_cluster_snapshot(
     SourceDBClusterSnapshotIdentifier=source_snapshot,
@@ -85,4 +84,4 @@ else:
         DBClusterSnapshotIdentifier=response['DBClusterSnapshot']['DBClusterSnapshotArn'],
         )
 
-    logger.info('Snapshot copied successfully')
+    logger.info("Snapshot copied successfully")
