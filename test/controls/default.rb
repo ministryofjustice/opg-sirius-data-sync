@@ -32,6 +32,10 @@ control 'Database Sync' do
     it { should exist }
     its('mode') { should cmp '0755'}
   end
+  describe file('/app/create-remote-snapshot.py') do
+    it { should exist }
+    its('mode') { should cmp '0644'}
+  end
   describe file('/app/create-shared-snapshot.sh') do
     it { should exist }
     its('mode') { should cmp '0755'}
