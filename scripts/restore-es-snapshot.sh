@@ -12,8 +12,8 @@ fi
 
 check_elastic_restore() {
     COMPLETED=1
-    INDEX_NAME=$(curl -s $ES_VPC_ENDPOINT/_cat/aliases/person?format=json|jq -r '.[].index')
-    for SHARD in $(curl -s $ES_VPC_ENDPOINT/$INDEX_NAME/_recovery?pretty|jq -r '.'$INDEX_NAME'.shards[].index.files.percent')
+    INDEX_NAME=$(curl -s "https://$ES_VPC_ENDPOINT/_cat/aliases/person?format=json" | jq -r '.[].index')
+    for SHARD in $(curl -s "https://$ES_VPC_ENDPOINT/$INDEX_NAME/_recovery?pretty" | jq -r '.'$INDEX_NAME'.shards[].index.files.percent')
     do
         if [ "$SHARD" != "100.0%" ];
         then
