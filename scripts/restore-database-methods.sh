@@ -13,7 +13,7 @@ create_db_instance() {
     echo "INFO - Creating DB Cluster Instance $INSTANCE"
     aws rds create-db-instance \
         --db-instance-identifier $INSTANCE \
-        --db-instance-class db.r5.2xlarge \
+        --db-instance-class $INSTANCE_CLASS \
         --engine aurora-postgresql \
         --availability-zone $AZ \
         --db-cluster-identifier $CLUSTER \
@@ -42,6 +42,12 @@ CLUSTER_ARN=$(aws rds describe-db-clusters --db-cluster-identifier "$DATABASE_CL
     --output text)
 check_look_up_exists "$CLUSTER_ARN"
 echo "INFO - DB Cluster ARN set to $CLUSTER_ARN"
+
+INSTANCE_CLASS=$(aws rds describe-db-instances --db-instance-identifier "$DATABASE-$ENVIRONMENT_NAME-0" \
+    --query=DBInstances[0].DBInstanceClass \
+    --output text)
+check_look_up_exists "$INSTANCE_CLASS"
+echo "INFO - Database Instance Class set to $INSTANCE_CLASS"
 
 SECURITY_GROUP=$(aws rds describe-db-clusters --db-cluster-identifier "$DATABASE_CLUSTER" \
     --query=DBClusters[0].VpcSecurityGroups[0].VpcSecurityGroupId \
