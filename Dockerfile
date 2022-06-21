@@ -1,6 +1,4 @@
-FROM alpine:3 as base
-
-FROM base as builder
+FROM alpine:3 as builder
 
 RUN mkdir /install
 RUN apk update && apk add postgresql-dev gcc python3-dev py3-pip musl-dev
@@ -10,7 +8,7 @@ RUN pip install --prefix=/install psycopg2
 
 FROM alpine:3
 
-COPY --from=builder /install/lib/python3.9/site-packages/ /usr/lib/python3.9/site-packages/
+COPY --from=builder /install/lib/python3.10/site-packages/ /usr/lib/python3.10/site-packages/
 WORKDIR /app/
 
 COPY scripts/requirements.txt /app/requirements.txt
