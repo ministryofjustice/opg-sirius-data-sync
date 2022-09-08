@@ -23,7 +23,11 @@ GLOBAL_CLUSTER=$ENVIRONMENT_NAME-$DATABASE-global
 REGIONAL_CLUSTER=$DATABASE-$ENVIRONMENT_NAME
 
 if [ -z "$DATABASE_VERSION" ]; then
-  DATABASE_VERSION="10.14"
+  DATABASE_VERSION="10.20"
+fi
+
+if [ -z "$PARAMETER_GROUP" ]; then
+  PARAMETER_GROUP="default.aurora-postgresql10"
 fi
 
 check_for_and_delete_snapshot() {
@@ -332,6 +336,7 @@ aws rds restore-db-cluster-from-snapshot \
     --engine-version $DATABASE_VERSION \
     --vpc-security-group-ids $PRIMARY_SECURITY_GROUP \
     --db-subnet-group-name $PRIMARY_SUBNET_GROUP \
+    --db-cluster-parameter-group-name \
     --deletion-protection \
     --enable-cloudwatch-logs-exports postgresql
 wait_for_db_cluster_available $PRIMARY_REGION $REGIONAL_CLUSTER
@@ -425,6 +430,7 @@ echo "INFO - Create $DR_REGION $REGIONAL_CLUSTER from $GLOBAL_CLUSTER"
 aws rds create-db-cluster \
     --region $DR_REGION \
     --db-cluster-identifier $REGIONAL_CLUSTER \
+    --db-cluster-parameter-group-name \
     --db-subnet-group-name $DR_SUBNET_GROUP \
     --deletion-protection \
     --enable-cloudwatch-logs-exports postgresql \

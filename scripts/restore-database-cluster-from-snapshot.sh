@@ -83,6 +83,7 @@ aws rds restore-db-cluster-from-snapshot \
     --engine-version "$DATABASE_VERSION" \
     --vpc-security-group-ids "$SECURITY_GROUP" \
     --db-subnet-group-name "$SUBNET_GROUP" \
+    --db-cluster-parameter-group-name "$PARAMETER_GROUP" \
     --deletion-protection \
     --enable-cloudwatch-logs-exports postgresql
 wait_for_db_cluster_available "$DATABASE_CLUSTER"

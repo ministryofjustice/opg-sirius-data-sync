@@ -14,7 +14,11 @@ if [ -z "$DATABASE" ]; then
 fi
 
 if [ -z "$DATABASE_VERSION" ]; then
-  DATABASE_VERSION="10.14"
+  DATABASE_VERSION="10.20"
+fi
+
+if [ -z "$PARAMETER_GROUP" ]; then
+  PARAMETER_GROUP="default.aurora-postgresql10"
 fi
 
 echo "INFO - Database Version set to $DATABASE_VERSION"

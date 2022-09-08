@@ -8,13 +8,12 @@ if [ -z "$ENVIRONMENT_NAME" ]; then
     exit 1
 fi
 
-if [ -z "$DATABASE" ]; then
-    echo "ERROR - You need to set the DATABASE environment variable."
-    exit 1
+if [ -z "$DATABASE_VERSION" ]; then
+  DATABASE_VERSION="10.20"
 fi
 
-if [ -z "$DATABASE_VERSION" ]; then
-  DATABASE_VERSION="10.14"
+if [ -z "$PARAMETER_GROUP" ]; then
+  PARAMETER_GROUP="default.aurora-postgresql10"
 fi
 
 check_for_and_delete_snapshot() {
