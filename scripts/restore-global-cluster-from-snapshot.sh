@@ -173,6 +173,7 @@ echo "INFO - Restoring $PRIMARY_REGION $REGIONAL_CLUSTER from $SNAPSHOT_FOR_REST
 aws rds restore-db-cluster-from-snapshot \
     --region $PRIMARY_REGION \
     --db-cluster-identifier $REGIONAL_CLUSTER \
+    --db-cluster-parameter-group-name $PARAMETER_GROUP \
     --snapshot-identifier $SNAPSHOT_FOR_RESTORE \
     --engine aurora-postgresql \
     --engine-version $DATABASE_VERSION \
@@ -271,6 +272,7 @@ echo "INFO - Create $DR_REGION $REGIONAL_CLUSTER from $GLOBAL_CLUSTER"
 aws rds create-db-cluster \
     --region $DR_REGION \
     --db-cluster-identifier $REGIONAL_CLUSTER \
+    --db-cluster-parameter-group-name "$PARAMETER_GROUP" \
     --db-subnet-group-name $DR_SUBNET_GROUP \
     --deletion-protection \
     --enable-cloudwatch-logs-exports postgresql \
