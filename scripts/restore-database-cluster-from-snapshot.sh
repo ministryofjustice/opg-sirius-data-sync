@@ -9,7 +9,7 @@
 # Optional Envionment Variables
 # CLUSTER_NODES=3
 # SKIP_SNAPSHOT=false
-# DATABASE_VERSION=10.14
+# DATABASE_VERSION=13.6
 
 set -e
 set -o pipefail
@@ -94,9 +94,9 @@ if [ "$CLUSTER_NODES" == "1" ]; then
     wait_for_db_instance_available $DATABASE_CLUSTER-0
 else
     echo "INFO - Creating Multi AZ Instances for $DATABASE_CLUSTER"
-    create_db_instance $DATABASE_CLUSTER $DATABASE_CLUSTER-0 eu-west-1a
-    create_db_instance $DATABASE_CLUSTER $DATABASE_CLUSTER-1 eu-west-1b
-    create_db_instance $DATABASE_CLUSTER $DATABASE_CLUSTER-2 eu-west-1c
+    create_db_instance $DATABASE_CLUSTER $DATABASE_CLUSTER-0 eu-west-1a $WRITER_INSTANCE_CLASS
+    create_db_instance $DATABASE_CLUSTER $DATABASE_CLUSTER-1 eu-west-1b $READER_INSTANCE_CLASS
+    create_db_instance $DATABASE_CLUSTER $DATABASE_CLUSTER-2 eu-west-1c $READER_INSTANCE_CLASS
     wait_for_db_instance_available $DATABASE_CLUSTER-0
     wait_for_db_instance_available $DATABASE_CLUSTER-1
     wait_for_db_instance_available $DATABASE_CLUSTER-2

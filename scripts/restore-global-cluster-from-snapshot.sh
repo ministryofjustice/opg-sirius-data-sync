@@ -10,7 +10,7 @@ set -o pipefail
 # PRIMARY_REGION=eu-west-1
 # DR_REGION=eu-west-2
 
-. common-multi-az.sh
+. ./common-multi-az.sh
 
 GLOBAL_CLUSTER=$ENVIRONMENT_NAME-$DATABASE-global
 REGIONAL_CLUSTER=$DATABASE-$ENVIRONMENT_NAME
@@ -82,13 +82,21 @@ MONITORING_ROLE=$(aws rds describe-db-instances \
     --output text)
 check_look_up_exists "$MONITORING_ROLE"
 
-# Lookup DB Instance Class
-INSTANCE_CLASS=$(aws rds describe-db-instances \
+# Lookup Primary DB Instance Class
+PRIMARY_INSTANCE_CLASS=$(aws rds describe-db-instances \
     --region $PRIMARY_REGION \
     --db-instance-identifier "$REGIONAL_CLUSTER-0" \
     --query=DBInstances[0].DBInstanceClass \
     --output text)
-check_look_up_exists "$INSTANCE_CLASS"
+check_look_up_exists "$PRIMARY_INSTANCE_CLASS"
+
+# Lookup Secondary DB Instance Class
+DR_INSTANCE_CLASS=$(aws rds describe-db-instances \
+    --region $DR_REGION \
+    --db-instance-identifier "$REGIONAL_CLUSTER-0" \
+    --query=DBInstances[0].DBInstanceClass \
+    --output text)
+check_look_up_exists "$DR_INSTANCE_CLASS"
 
 echo "INFO - DATABASE: $DATABASE"
 echo "INFO - ENVIRONMENT_NAME: $ENVIRONMENT_NAME"
@@ -105,7 +113,8 @@ echo "INFO - DR_SECURITY_GROUP=$DR_SECURITY_GROUP"
 echo "INFO - PRIMARY_SUBNET_GROUP=$PRIMARY_SUBNET_GROUP"
 echo "INFO - DR_SUBNET_GROUP=$DR_SUBNET_GROUP"
 echo "INFO - MONITORING_ROLE=$MONITORING_ROLE"
-echo "INFO - INSTANCE_CLASS=$INSTANCE_CLASS"
+echo "INFO - PRIMARY_INSTANCE_CLASS=$PRIMARY_INSTANCE_CLASS"
+echo "INFO - DR_INSTANCE_CLASS=$DR_INSTANCE_CLASS"
 
 # Ensure a valid snapshot exists for restore.
 check_snapshot_exists $PRIMARY_REGION $SNAPSHOT_FOR_RESTORE
@@ -188,7 +197,7 @@ echo "INFO - Creating cluster instances for $PRIMARY_REGION $REGIONAL_CLUSTER"
 aws rds create-db-instance \
     --region $PRIMARY_REGION \
     --db-instance-identifier $REGIONAL_CLUSTER-0 \
-    --db-instance-class $INSTANCE_CLASS \
+    --db-instance-class $PRIMARY_INSTANCE_CLASS \
     --engine aurora-postgresql \
     --availability-zone $PRIMARY_REGION"a" \
     --db-cluster-identifier $REGIONAL_CLUSTER \
@@ -211,7 +220,7 @@ aws rds create-db-instance \
 aws rds create-db-instance \
     --region $PRIMARY_REGION \
     --db-instance-identifier $REGIONAL_CLUSTER-1 \
-    --db-instance-class $INSTANCE_CLASS \
+    --db-instance-class $PRIMARY_INSTANCE_CLASS \
     --engine aurora-postgresql \
     --availability-zone $PRIMARY_REGION"b" \
     --db-cluster-identifier $REGIONAL_CLUSTER \
@@ -234,7 +243,7 @@ aws rds create-db-instance \
 aws rds create-db-instance \
     --region $PRIMARY_REGION \
     --db-instance-identifier $REGIONAL_CLUSTER-2 \
-    --db-instance-class $INSTANCE_CLASS \
+    --db-instance-class $PRIMARY_INSTANCE_CLASS \
     --engine aurora-postgresql \
     --availability-zone $PRIMARY_REGION"c" \
     --db-cluster-identifier $REGIONAL_CLUSTER \
@@ -285,11 +294,11 @@ aws rds create-db-cluster \
 wait_for_db_cluster_available $DR_REGION $REGIONAL_CLUSTER
 
 # Add Instances to $DR_REGION Cluster
-echo "INFO - Creating cluster instances fro $DR_REGION $REGIONAL_CLUSTER"
+echo "INFO - Creating cluster instances from $DR_REGION $REGIONAL_CLUSTER"
 aws rds create-db-instance \
     --region $DR_REGION \
     --db-instance-identifier $REGIONAL_CLUSTER-0 \
-    --db-instance-class $INSTANCE_CLASS \
+    --db-instance-class $DR_INSTANCE_CLASS \
     --engine aurora-postgresql \
     --availability-zone $DR_REGION"a" \
     --db-cluster-identifier $REGIONAL_CLUSTER \
@@ -312,7 +321,7 @@ aws rds create-db-instance \
 aws rds create-db-instance \
     --region $DR_REGION \
     --db-instance-identifier $REGIONAL_CLUSTER-1 \
-    --db-instance-class $INSTANCE_CLASS \
+    --db-instance-class $DR_INSTANCE_CLASS \
     --engine aurora-postgresql \
     --availability-zone $DR_REGION"b" \
     --db-cluster-identifier $REGIONAL_CLUSTER \
@@ -335,7 +344,7 @@ aws rds create-db-instance \
 aws rds create-db-instance \
     --region $DR_REGION \
     --db-instance-identifier $REGIONAL_CLUSTER-2 \
-    --db-instance-class $INSTANCE_CLASS \
+    --db-instance-class $DR_INSTANCE_CLASS \
     --engine aurora-postgresql \
     --availability-zone $DR_REGION"c" \
     --db-cluster-identifier $REGIONAL_CLUSTER \
