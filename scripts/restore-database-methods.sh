@@ -82,3 +82,9 @@ check_look_up_exists "RDS_PASSWORD"
 echo "INFO - RDS Password retrieved"
 
 check_snapshot_exists "$LOCAL_SNAPSHOT"
+
+SERVERLESS_MAX_CAPACITY=$(aws rds describe-db-clusters \
+    --db-cluster-identifier "$DATABASE_CLUSTER" \
+    --query=DBClusters[0].ServerlessV2ScalingConfiguration.MaxCapacity \
+    --output text)
+check_look_up_exists "$SERVERLESS_MAX_CAPACITY"

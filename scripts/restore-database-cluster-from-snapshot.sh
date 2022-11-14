@@ -2,7 +2,7 @@
 
 # Required Environment Variables
 # ACCOUNT_NAME=preproduction
-# AWS_DEFAULT_REGIOm=eu-west-1
+# AWS_DEFAULT_REGION=eu-west-1
 # DATABASE=api
 # ENVIRONMENT_NAME=preproduction
 
@@ -85,7 +85,8 @@ aws rds restore-db-cluster-from-snapshot \
     --db-subnet-group-name "$SUBNET_GROUP" \
     --db-cluster-parameter-group-name "$PARAMETER_GROUP" \
     --deletion-protection \
-    --enable-cloudwatch-logs-exports postgresql
+    --enable-cloudwatch-logs-exports postgresql \
+    --serverless-v2-scaling-configuration MinCapacity=0.5,MaxCapacity=$SERVERLESS_MAX_CAPACITY
 wait_for_db_cluster_available "$DATABASE_CLUSTER"
 
 if [ "$CLUSTER_NODES" == "1" ]; then
