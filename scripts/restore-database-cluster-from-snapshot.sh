@@ -86,7 +86,7 @@ aws rds restore-db-cluster-from-snapshot \
     --db-cluster-parameter-group-name "$PARAMETER_GROUP" \
     --deletion-protection \
     --enable-cloudwatch-logs-exports postgresql \
-    --serverless-v2-scaling-configuration MinCapacity=0.5,MaxCapacity=$SERVERLESS_MAX_CAPACITY
+    --serverless-v2-scaling-configuration MinCapacity=$SERVERLESS_MIN_CAPACITY,MaxCapacity=$SERVERLESS_MAX_CAPACITY
 wait_for_db_cluster_available "$DATABASE_CLUSTER"
 
 if [ "$CLUSTER_NODES" == "1" ]; then
