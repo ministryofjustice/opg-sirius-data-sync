@@ -106,6 +106,14 @@ SERVERLESS_MAX_CAPACITY=$(aws rds describe-db-clusters \
     --output text)
 check_look_up_exists "$SERVERLESS_MAX_CAPACITY"
 
+# Lookup Serverless Min Capacity
+SERVERLESS_MIN_CAPACITY=$(aws rds describe-db-clusters \
+    --region $PRIMARY_REGION \
+    --db-cluster-identifier "$PRIMARY_CLUSTER_ARN" \
+    --query=DBClusters[0].ServerlessV2ScalingConfiguration.MinCapacity \
+    --output text)
+check_look_up_exists "$SERVERLESS_MIN_CAPACITY"
+
 echo "INFO - DATABASE: $DATABASE"
 echo "INFO - ENVIRONMENT_NAME: $ENVIRONMENT_NAME"
 echo "INFO - PRIMARY_REGION: $PRIMARY_REGION"
@@ -124,6 +132,7 @@ echo "INFO - MONITORING_ROLE=$MONITORING_ROLE"
 echo "INFO - PRIMARY_INSTANCE_CLASS=$PRIMARY_INSTANCE_CLASS"
 echo "INFO - DR_INSTANCE_CLASS=$DR_INSTANCE_CLASS"
 echo "INFO - SERVERLESS_MAX_CAPACITY=$SERVERLESS_MAX_CAPACITY"
+echo "INFO - SERVERLESS_MIN_CAPACITY=$SERVERLESS_MIN_CAPACITY"
 
 # Ensure a valid snapshot exists for restore.
 check_snapshot_exists $PRIMARY_REGION $SNAPSHOT_FOR_RESTORE
@@ -199,7 +208,7 @@ aws rds restore-db-cluster-from-snapshot \
     --db-subnet-group-name $PRIMARY_SUBNET_GROUP \
     --deletion-protection \
     --enable-cloudwatch-logs-exports postgresql \
-    --serverless-v2-scaling-configuration MinCapacity=0.5,MaxCapacity=$SERVERLESS_MAX_CAPACITY
+    --serverless-v2-scaling-configuration MinCapacity=$SERVERLESS_MIN_CAPACITY,MaxCapacity=$SERVERLESS_MAX_CAPACITY
 wait_for_db_cluster_available $PRIMARY_REGION $REGIONAL_CLUSTER
 
 # Add Instances to $PRIMARY_REGION Cluster
