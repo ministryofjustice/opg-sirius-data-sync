@@ -6,6 +6,9 @@ all: build test cleanup
 build:
 	docker build -t data-sync:latest .
 
+scan:
+	trivy image data-sync:latest
+
 .PHONY: test
 test:
 	docker run --rm -d -i --name data-sync data-sync:latest
