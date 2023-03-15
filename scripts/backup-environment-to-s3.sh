@@ -34,5 +34,4 @@ function backup_documents_to_s3 {
 }
 
 backup_database_to_s3 api
-backup_database_to_s3 membrane
 backup_documents_to_s3

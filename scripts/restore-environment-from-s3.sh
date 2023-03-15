@@ -52,5 +52,4 @@ function restore_documents_from_s3 {
 }
 
 restore_database_from_s3 api
-restore_database_from_s3 membrane
 restore_documents_from_s3
