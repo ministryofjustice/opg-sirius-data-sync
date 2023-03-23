@@ -22,4 +22,11 @@ RUN apk --update --no-cache add \
   && pip install --no-cache-dir awscli -r requirements.txt \
   && rm -rf /var/cache/apk/* /root/.cache/pip/*
 
+# Patch Vulnerable Packages
+RUN apk upgrade --no-cache \
+  curl \
+  libcurl \
+  libcrypto3 \
+  libssl3
+
 COPY scripts /app
