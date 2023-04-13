@@ -27,6 +27,7 @@ RUN apk upgrade --no-cache \
   curl \
   libcurl \
   libcrypto3 \
-  libssl3
+  libssl3 \
+  libxml2
 
 COPY scripts /app
