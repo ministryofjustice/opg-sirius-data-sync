@@ -8,7 +8,7 @@ RUN pip install --prefix=/install psycopg2
 
 FROM alpine:3
 
-COPY --from=builder /install/lib/python3.10/site-packages/ /usr/lib/python3.10/site-packages/
+COPY --from=builder /install/lib/python3.11/site-packages/ /usr/lib/python3.11/site-packages/
 WORKDIR /app/
 
 COPY scripts/requirements.txt /app/requirements.txt
