@@ -1,7 +1,7 @@
 SHELL = '/bin/bash'
 export DOCKER_BUILDKIT ?= 1
 
-all: build test cleanup
+all: build scan test cleanup
 
 build:
 	docker build -t data-sync:latest .
