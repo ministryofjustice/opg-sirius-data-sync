@@ -295,6 +295,9 @@ aws rds create-global-cluster \
     --deletion-protection
 wait_for_global_cluster_available $PRIMARY_REGION $GLOBAL_CLUSTER
 
+# Wait for the Global Cluster Membership of Primary Region to Complete
+wait_for_db_cluster_available $PRIMARY_REGION $REGIONAL_CLUSTER
+
 # Create $DR_REGION cluster
 echo "INFO - Create $DR_REGION $REGIONAL_CLUSTER from $GLOBAL_CLUSTER"
 aws rds create-db-cluster \
