@@ -23,6 +23,6 @@ RUN apk --update --no-cache add \
   && rm -rf /var/cache/apk/* /root/.cache/pip/*
 
 # Patch Vulnerable Packages
-RUN apk upgrade --no-cache nghttp2-libs
+RUN apk upgrade --no-cache nghttp2-libs libcrypto3 libssl3
 
 COPY scripts /app
