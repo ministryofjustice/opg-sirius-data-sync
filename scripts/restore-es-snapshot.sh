@@ -42,7 +42,7 @@ else
 fi
 
 echo "INFO - Deleting Existing Indices..."
-if curl -fsS -XDELETE "https://$ES_VPC_ENDPOINT/_all";
+if curl -fsS -XDELETE "https://$ES_VPC_ENDPOINT/_all?expand_wildcards=all";
 then
     echo "INFO - Indices deleted."
 else
