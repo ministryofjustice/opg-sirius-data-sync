@@ -45,7 +45,7 @@ jobs:
 
       - name: Install Inspec for Image Tests
         run: |
-          curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec
+          curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec -v 5
           inspec --chef-license=accept
 
       - name: Run Inspec Tests
