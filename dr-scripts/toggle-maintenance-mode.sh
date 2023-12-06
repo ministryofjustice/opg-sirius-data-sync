@@ -26,11 +26,15 @@ checkMaintenanceMode() {
 }
 
 enableMaintenanceMode() {
-    local SERVICES=$(aws ecs list-services --cluster dr-test --region eu-west-1 | jq -r ".serviceArns.[]")
+    local SERVICES=$(aws ecs list-services --cluster $ENVIRONMENT_NAME --region $REGION | jq -r ".serviceArns.[]")
     for SERVICE in $SERVICES;
     do
-        echo $SERVICE
+        aws ecs update-service --cluster $ENVIRONMENT_NAME --region $REGION --service $SERVICE --desired-count 0 --no-cli-pager
     done
+
+    aws ecs update-service --cluster $ENVIRONMENT_NAME --region $REGION --service maintenance --desired-count 1 --no-cli-pager
+
+    waitForServiceStable "maintenance"
 }
 
 validateEnvironment
