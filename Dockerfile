@@ -13,13 +13,15 @@ WORKDIR /app/
 
 COPY scripts/requirements.txt /app/requirements.txt
 RUN apk --update --no-cache add \
+  aws-cli \
   postgresql13 \
   python3 \
   bash \
   curl \
   jq \
-  py3-pip \
-  && pip install --no-cache-dir awscli -r requirements.txt \
+  py3-pip
+
+RUN pip install --break-system-packages --no-cache-dir -r requirements.txt \
   && rm -rf /var/cache/apk/* /root/.cache/pip/*
 
 # Patch Vulnerable Packages
