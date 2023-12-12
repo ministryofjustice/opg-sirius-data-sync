@@ -38,9 +38,18 @@ function  restore_database_from_s3() {
     export PGHOST=$(echo $db_info | jq -r '.DBClusters[].Endpoint')
     export PGPASSWORD=$(aws secretsmanager get-secret-value --secret-id rds-${db_name}-development | jq -r '.SecretString')
     echo "INFO - Restoring local file ${target_env}-${db_name}-backup.sql to ${db_name}"
+    echo "INFO - Dropping & Recreating poa Schema"
+    psql -c 'DROP SCHEMA poa CASCADE;'
+    psql -c 'CREATE SCHEMA poa;'
     echo "INFO - Dropping & Recreating public Schema"
     psql -c 'DROP SCHEMA public CASCADE;'
     psql -c 'CREATE SCHEMA public;'
+    echo "INFO - Dropping & Recreating supervision Schema"
+    psql -c 'DROP SCHEMA supervision CASCADE;'
+    psql -c 'CREATE SCHEMA supervision;'
+    echo "INFO - Dropping & Recreating supervision_finance Schema"
+    psql -c 'DROP SCHEMA supervision_finance CASCADE;'
+    psql -c 'CREATE SCHEMA supervision_finance;'
     psql -f ${target_env}-${db_name}-backup.sql
     echo "INFO - Restore complete."
 }
