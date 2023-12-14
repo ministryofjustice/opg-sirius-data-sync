@@ -77,19 +77,6 @@ disableMaintenanceMode() {
     waitForServiceStable "maintenance"
 }
 
-updateService() {
-    local SERVICE=$1
-    local DESIRED_COUNT=${2}
-    echo "INFO - Updating service $SERVICE"
-    echo "INFO - Setting desired count to $DESIRED_COUNT"
-    if aws ecs update-service --cluster $ENVIRONMENT_NAME --region $REGION --service $SERVICE --desired-count $DESIRED_COUNT --no-cli-pager; then
-        echo "INFO - Updated $SERVICE Service."
-    else
-        echo "ERROR - $SERVICE Service Update Failed!"
-        exit 1
-    fi
-}
-
 getLoadBalancerRuleArn() {
     local ELB_ARN=$(aws elbv2 describe-load-balancers --names $ENVIRONMENT_NAME --region $REGION | jq -r ".LoadBalancers.[].LoadBalancerArn")
     local LISTERN_ARN=$(aws elbv2 describe-listeners --region $REGION --load-balancer-arn $ELB_ARN | jq -r '.Listeners[] | select(.Protocol == "HTTPS") | .ListenerArn')

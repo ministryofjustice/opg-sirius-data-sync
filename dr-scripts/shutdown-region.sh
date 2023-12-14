@@ -7,7 +7,7 @@ set -o pipefail
 
 validateEnvironment() {
 
-    validateCommonEnvironment();
+    validateCommonEnvironment
 
     if [ -z "$REGION" ]; then
     echo "ERROR - You need to set the REGION environment variable."

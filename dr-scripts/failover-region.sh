@@ -2,3 +2,5 @@
 
 set -e
 set -o pipefail
+
+. common.sh
