@@ -73,3 +73,34 @@ updateEventBusRules() {
         updateEventbridgeRule $RULE $STATE $EVENTBUS
     done
 }
+
+updateGlueTrigger() {
+    local TRIGGER=$1
+    local STATE=$2
+    echo "INFO - Updating Glue Trigger $TRIGGER"
+    echo "INFO - Setting state to $STATE"
+    if [ $STATE == "ENABLED" ]; then 
+        local COMMAND=start
+    else
+        local COMMAND=stop
+    fi
+    echo "INFO - Updating $TRIGGER to $STATE..."
+    if aws glue $COMMAND-trigger --name $TRIGGER --region $REGION --no-cli-pager; then
+        echo "INFO - Updated $TRIGGER to $STATE."
+    else
+        echo "ERROR - Glue Trigger $TRIGGER Failed to Update!"
+        exit 1
+    fi
+}
+
+updateGlueJobTriggers() {
+    local STATE=$1
+    # Lookup all glue triggers for environment
+    echo "INFO - Setting Glue Job Triggers for $ENVIRONMENT_NAME to $STATE"
+    local TRIGGERS=$(aws glue list-triggers --max-results 200 --region $REGION | jq -r '.TriggerNames[] | select(.|endswith("'$ENVIRONMENT_NAME'"))')
+    for TRIGGER in $TRIGGERS;
+    do 
+        # Cycle through rules senting to the desired state
+        updateGlueTrigger $TRIGGER $STATE
+    done
+}

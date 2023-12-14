@@ -50,18 +50,13 @@ toggleMaintenanceMode() {
 }
 
 enableMaintenanceMode() {
-    # Lookup all Services in Cluster
+    # Lookup all ECS Services in Cluster
     local SERVICES=$(aws ecs list-services --cluster $ENVIRONMENT_NAME --region $REGION | jq -r ".serviceArns.[]")
-    # Loop Through Service List and Scale to Zero.
+    # Loop Through ECS Service List and Scale to Zero.
     for SERVICE in $SERVICES;
     do
         updateService $SERVICE "0"
     done
-
-    # Disable All EventBridge Rules for this Environment on the Default Event Bus
-    updateEventBusRules "default" "DISABLED"
-    # Disable All EventBridge Rules for this Environment on the POAS Event Bus
-    updateEventBusRules "$ENVIRONMENT_NAME-poas" "DISABLED"
 
     echo "INFO - Starting Maintenance Service"
     # Scale up the Maintenance Service
@@ -69,22 +64,25 @@ enableMaintenanceMode() {
     # Once Stable Redirect All Traffic to the Maintenance Task
     waitForServiceStable "maintenance"
     redirectToMaintenance
+
+    # Disable All EventBridge Rules for this Environment on the Default Event Bus
+    updateEventBusRules "default" "DISABLED"
+    # Disable All EventBridge Rules for this Environment on the POAS Event Bus
+    updateEventBusRules "$ENVIRONMENT_NAME-poas" "DISABLED"
+
+    # Enable all Glue Job Triggers
+    updateGlueJobTriggers "DISABLED"
 }
 
 disableMaintenanceMode() {
-    # Lookup all Services in Cluster
+    # Lookup all ECS Services in Cluster
     local SERVICES=$(aws ecs list-services --cluster $ENVIRONMENT_NAME --region $REGION | jq -r ".serviceArns.[]")
-    # Loop through Services, look up Production Scale in Service Counts Array and scale up to normal Level
+    # Loop through ECS Services, look up Production Scale in Service Counts Array and scale up to normal Level
     for SERVICE in $SERVICES;
     do
         local SERVICE_NAME=$(aws ecs describe-services --service $SERVICE --cluster $ENVIRONMENT_NAME --region $REGION | jq -r ".services[].serviceName")
         updateService $SERVICE_NAME ${DESIRED_SERVICE_COUNTS[$SERVICE_NAME]:-"1"}
     done
-
-    # Enable All EventBridge Rules for this Environment on the Default Event Bus
-    updateEventBusRules "default" "ENABLED"
-    # Enable All EventBridge Rules for this Environment on the POAS Event Bus
-    updateEventBusRules "$ENVIRONMENT_NAME-poas" "ENABLED"
 
     # Once Frontend Service is stable disable the redirect to the maintenance service
     waitForServiceStable "frontend"
@@ -94,6 +92,14 @@ disableMaintenanceMode() {
     # Scale down the maintenance service
     updateService "maintenance" "0"
     waitForServiceStable "maintenance"
+
+    # Enable All EventBridge Rules for this Environment on the Default Event Bus
+    updateEventBusRules "default" "ENABLED"
+    # Enable All EventBridge Rules for this Environment on the POAS Event Bus
+    updateEventBusRules "$ENVIRONMENT_NAME-poas" "ENABLED"
+
+    # Enable all Glue Job Triggers
+    updateGlueJobTriggers "ENABLED"
 }
 
 getLoadBalancerRuleArn() {
