@@ -44,13 +44,32 @@ updateService() {
 updateEventbridgeRule() {
     local RULE=$1
     local STATE=$2
+    local EVENTBUS=$3
     echo "INFO - Updating rule $RULE"
     echo "INFO - Setting state to $STATE"
-    if $STATE == "ENABLED"; then 
-    if aws ecs update-rule --cluster $ENVIRONMENT_NAME --region $REGION --service $SERVICE --desired-count $DESIRED_COUNT --no-cli-pager; then
-        echo "INFO - Updated $SERVICE Service."
+    if [ $STATE == "ENABLED" ]; then 
+        local COMMAND=enable-rule
     else
-        echo "ERROR - $SERVICE Service Update Failed!"
+        local COMMAND=disable-rule
+    fi
+    echo "INFO - Updating $RULE to $STATE..."
+    if aws events $COMMAND --event-bus-name $EVENTBUS --name $RULE --region $REGION --no-cli-pager; then
+        echo "INFO - Updated $RULE to $STATE."
+    else
+        echo "ERROR - EventBridge Rule $RULE Failed to Update!"
         exit 1
     fi
+}
+
+updateEventBusRules() {
+    local EVENTBUS=$1
+    local STATE=$2
+
+    # Lookup all rules on an event bus
+    local RULES=$(aws events list-rules --name-prefix $ENVIRONMENT_NAME --event-bus-name $EVENTBUS --region $REGION | jq -r ".Rules[].Name")
+    for RULE in $RULES;
+    do 
+        # Cycle through rules senting to the desired state
+        updateEventbridgeRule $RULE $STATE $EVENTBUS
+    done
 }
