@@ -19,6 +19,7 @@ create_db_instance() {
         --availability-zone $AZ \
         --db-cluster-identifier $CLUSTER \
         --no-auto-minor-version-upgrade \
+        --ca-certificate-identifier rds-ca-rsa2048-g1 \
         --promotion-tier 0 \
         --monitoring-interval 30 \
         --monitoring-role-arn "$MONITORING_ROLE" \

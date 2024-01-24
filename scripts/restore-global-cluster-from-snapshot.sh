@@ -231,6 +231,7 @@ aws rds create-db-instance \
     --engine aurora-postgresql \
     --availability-zone $PRIMARY_REGION"a" \
     --db-cluster-identifier $REGIONAL_CLUSTER \
+    --ca-certificate-identifier rds-ca-rsa2048-g1 \
     --no-auto-minor-version-upgrade \
     --promotion-tier 0 \
     --monitoring-interval 30 \
@@ -254,6 +255,7 @@ aws rds create-db-instance \
     --engine aurora-postgresql \
     --availability-zone $PRIMARY_REGION"b" \
     --db-cluster-identifier $REGIONAL_CLUSTER \
+    --ca-certificate-identifier rds-ca-rsa2048-g1 \
     --no-auto-minor-version-upgrade \
     --promotion-tier 0 \
     --monitoring-interval 30 \
@@ -277,6 +279,7 @@ aws rds create-db-instance \
     --engine aurora-postgresql \
     --availability-zone $PRIMARY_REGION"c" \
     --db-cluster-identifier $REGIONAL_CLUSTER \
+    --ca-certificate-identifier rds-ca-rsa2048-g1 \
     --no-auto-minor-version-upgrade \
     --promotion-tier 0 \
     --monitoring-interval 30 \
@@ -339,6 +342,7 @@ then
         --engine aurora-postgresql \
         --availability-zone $DR_REGION"a" \
         --db-cluster-identifier $REGIONAL_CLUSTER \
+        --ca-certificate-identifier rds-ca-rsa2048-g1 \
         --no-auto-minor-version-upgrade \
         --promotion-tier 0 \
         --monitoring-interval 30 \
@@ -362,6 +366,7 @@ then
         --engine aurora-postgresql \
         --availability-zone $DR_REGION"b" \
         --db-cluster-identifier $REGIONAL_CLUSTER \
+        --ca-certificate-identifier rds-ca-rsa2048-g1 \
         --no-auto-minor-version-upgrade \
         --promotion-tier 0 \
         --monitoring-interval 30 \
@@ -385,6 +390,7 @@ then
         --engine aurora-postgresql \
         --availability-zone $DR_REGION"c" \
         --db-cluster-identifier $REGIONAL_CLUSTER \
+        --ca-certificate-identifier rds-ca-rsa2048-g1 \
         --no-auto-minor-version-upgrade \
         --promotion-tier 0 \
         --monitoring-interval 30 \
