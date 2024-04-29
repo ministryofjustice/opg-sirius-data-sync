@@ -14,7 +14,7 @@ DEBUG = True
 
 supervision_query = """
     SELECT
-    documents.filename,
+    documents.filename
     FROM documents
     LEFT JOIN caseitem_document cd ON documents.id = cd.document_id
     LEFT JOIN cases ON cd.caseitem_id = cases.id
