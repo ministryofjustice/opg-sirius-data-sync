@@ -28,7 +28,7 @@ supervision_query = """
 def generate_pdf(content):
     headers = {"Content-Type": "text/html"}
 
-    url = 'http://pdf-service.adhoc.ecs/generate-pdf'
+    url = 'http://pdf-service.adhoc.ecs:8000/generate-pdf'
 
     r = requests.post(
         url,
