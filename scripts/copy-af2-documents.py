@@ -1,8 +1,6 @@
 import psycopg2
 import os
-import csv
 import boto3
-import re
 from botocore.exceptions import ClientError
 
 SOURCE_ENV = os.environ['SOURCE_ENV']
@@ -14,7 +12,8 @@ DEBUG = True
 
 supervision_query = """
     SELECT
-    documents.filename
+    documents.filename,
+    documents.uuid
     FROM documents
     LEFT JOIN caseitem_document cd ON documents.id = cd.document_id
     LEFT JOIN cases ON cd.caseitem_id = cases.id
@@ -113,6 +112,7 @@ connection = psycopg2.connect(
 )
 print("Database opened successfully")
 
-get_documents(supervision_query, case_ref)
+cursor = connection.cursor()
+get_documents(supervision_query)
 
 print("Operation done successfully")
