@@ -1,10 +1,10 @@
 import psycopg2
 import os
 import boto3
+import requests
 from botocore.exceptions import ClientError
 
-SOURCE_ENV = os.environ['SOURCE_ENV']
-DESTINATION_ENV = os.environ['DESTINATION_ENV']
+ENVIRONMENT = os.environ['ENVIRONMENT']
 
 credentials = boto3.Session().get_credentials()
 
@@ -12,8 +12,8 @@ DEBUG = True
 
 supervision_query = """
     SELECT
-    documents.filename,
-    documents.uuid
+    documents.uuid,
+    documents.content
     FROM documents
     LEFT JOIN caseitem_document cd ON documents.id = cd.document_id
     LEFT JOIN cases ON cd.caseitem_id = cases.id
@@ -21,87 +21,61 @@ supervision_query = """
     LEFT JOIN persons feepayers ON clients.feepayer_id = feepayers.id
     WHERE CAST(publisheddate AS DATE) >= '2024-04-19'
     AND (feepayers.email = '' OR feepayers.email IS NULL)
-    AND systemtype = 'af2';
+    AND systemtype = 'af2'
+    LIMIT 1;
     """
 
+def generate_pdf(content):
+    headers = {"Content-Type": "text/html"}
 
-def describe_pg_host(environment):
-    rds = boto3.client('rds')
-    instance = rds.describe_db_instances(
-        DBInstanceIdentifier="opgcoreapi-"+environment)
-    return instance.get('DBInstances')[0].get('Endpoint').get('Address')
+    url = 'http://pdf-service.adhoc.ecs/generate-pdf'
 
-
-def describe_pg_user(environment):
-    rds = boto3.client('rds')
-    instance = rds.describe_db_instances(
-        DBInstanceIdentifier="opgcoreapi-"+environment)
-    return instance.get('DBInstances')[0].get('MasterUsername')
-
-
-def describe_pg_database(environment):
-    rds = boto3.client('rds')
-    instance = rds.describe_db_instances(
-        DBInstanceIdentifier="opgcoreapi-"+environment)
-    return instance.get('DBInstances')[0].get('DBName')
-
-
-def get_pg_password():
-    secret_name = 'rds-api-'+DESTINATION_ENV
-
-    session = boto3.session.Session()
-    client = session.client(
-        service_name='secretsmanager',
-        region_name="eu-west-1",
+    r = requests.post(
+        url,
+        data=content,
+        headers=headers
     )
-
-    get_secret_value_response = client.get_secret_value(
-        SecretId=secret_name
-    )
-
-    return get_secret_value_response['SecretString']
-
-
-def copy_document(src_bucket_name, dest_bucket_name, document_name):
-    s3 = boto3.resource('s3')
-
-    copy_source = {
-        'Bucket': src_bucket_name,
-        'Key': document_name
-    }
-    try:
-        bucket = s3.Bucket(dest_bucket_name)
-        bucket.copy(copy_source, document_name, ExtraArgs={
-            'ServerSideEncryption': 'AES256'})
-
-    except ClientError as e:
-        print(e, " " + document_name)
-        return False
-    return True
+    
+    print(r.content)
+    
+def zip_batch(batch):
+    print('test')
 
 
 def get_documents(query):
     cursor.execute(query)
     documents = cursor.fetchall()
+    pdfs = []
+    batch = [];
+    batches = [];
     for document in documents:
-        if DEBUG:
-            print(
-                "Document Storage Name = {doc_name}".format(
-                    doc_name=document[0]
-                )
-            )
-        else:
-            copy_document(
-                'opg-backoffice-datastore-'+SOURCE_ENV,
-                'opg-backoffice-datastore-'+DESTINATION_ENV,
-                document[0])
-            print('document ' + document[0] + ' copied to destination bucket')
+        pdf = generate_pdf(document[1])
+        # batch.push(pdf)
+
+        # if (batch.len() == 10) :
+        #     # Zip batch, give it a nice name
+        #     batches.push(zip_batch(batch))
+        
+        
+        # if DEBUG:
+        #     print(
+        #         "Document Storage Uuid = {uuid}".format(
+        #             uuid=document[0],
+        #             content=document[1]
+        #         )
+        #     )
+        # else:
+        #     copy_document(
+        #         'opg-backoffice-datastore-'+SOURCE_ENV,
+        #         'opg-backoffice-datastore-'+DESTINATION_ENV,
+        #         document[0])
+        #     print('document ' + document[0] + ' copied to destination bucket')
 
 
-PG_DATABASE = describe_pg_database(DESTINATION_ENV)
-PG_HOST = describe_pg_host(DESTINATION_ENV)
-PG_USER = describe_pg_user(DESTINATION_ENV)
-PG_PASSWORD = get_pg_password()
+PG_DATABASE = os.environ['PGDATABASE']
+PG_HOST = os.environ['PGHOST']
+PG_USER = os.environ['PGUSER']
+PG_PASSWORD = os.environ['PGPASSWORD']
 
 connection = psycopg2.connect(
     database=PG_DATABASE,
@@ -110,6 +84,7 @@ connection = psycopg2.connect(
     host=PG_HOST,
     port="5432"
 )
+
 print("Database opened successfully")
 
 cursor = connection.cursor()
