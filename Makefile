@@ -1,10 +1,10 @@
 SHELL = '/bin/bash'
 export DOCKER_BUILDKIT ?= 1
 
-all: build scan test cleanup
+all: build scan test test-role-setup cleanup
 
 build:
-	docker build -t data-sync:latest .
+	docker compose build data-sync
 
 scan:
 	trivy image data-sync:latest
@@ -13,6 +13,12 @@ scan:
 test:
 	docker run --rm -d -i --name data-sync data-sync:latest
 	inspec exec test -t docker://data-sync --chef-license=accept-silent --reporter cli junit:data-sync-inspec.xml
+
+test-role-setup:
+	docker compose up --wait -d postgresql
+	docker compose run --rm create-database
+	docker compose run --rm create-roles
+	docker compose down
 
 cleanup:
 	docker rm --force data-sync

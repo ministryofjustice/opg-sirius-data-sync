@@ -1,0 +1,40 @@
+---
+services:
+  data-sync:
+    image: data-sync:latest
+    build: .
+
+  postgresql:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_PASSWORD: NotARealPassword123
+    healthcheck:
+      test: pg_isready --username=postgres --dbname=NotARealPassword123
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  create-database:
+    image: data-sync:latest
+    environment:
+      PGHOST: postgresql
+      PGPORT: 5432
+      PGPASSWORD: NotARealPassword123
+      PGUSER: postgres
+    volumes:
+      - ./test/setup_sirius_db.sql:/tmp/setup_sirius_db.sql
+    command: psql --file=/tmp/setup_sirius_db.sql
+
+  create-roles:
+    image: data-sync:latest
+    environment:
+      PGHOST: postgresql
+      PGPORT: 5432
+      PGPASSWORD: NotARealPassword123
+      PGUSER: postgres
+      DATABASE_NAME: api
+      SEARCH_APP_USER_PASSWORD: NotARealSearchPassword123
+      SIRIUS_APP_USER_PASSWORD: NotARealSiriusPassword123
+      SUPERVISION_FINANCE_APP_USER_PASSWORD: NotARealFinancePassword123
+      OPERATOR_PASSWORD: NotARealOperatorPassword123
+    command: /app/create-roles.sh
