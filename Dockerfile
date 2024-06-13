@@ -1,4 +1,4 @@
-FROM alpine:3 AS builder
+FROM alpine:3.19 AS builder
 
 RUN mkdir /install
 RUN apk update && apk add postgresql13-dev gcc python3-dev py3-pip musl-dev
@@ -6,7 +6,7 @@ WORKDIR /install
 RUN pip install --prefix=/install psycopg2
 
 
-FROM alpine:3
+FROM alpine:3.19
 
 COPY --from=builder /install/lib/python3.11/site-packages/ /usr/lib/python3.11/site-packages/
 WORKDIR /app/
