@@ -55,6 +55,9 @@ jobs:
           make test
           make cleanup
 
+      - name: Test User Role Setup
+        run: make test-role-setup
+
       - name: Publish Inspec Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
