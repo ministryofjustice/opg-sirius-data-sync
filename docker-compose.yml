@@ -7,9 +7,10 @@ services:
   postgresql:
     image: postgres:13-alpine
     environment:
+      POSTGRES_USER: opgadmin
       POSTGRES_PASSWORD: NotARealPassword123
     healthcheck:
-      test: pg_isready --username=postgres --dbname=NotARealPassword123
+      test: pg_isready --username=opgadmin --dbname=NotARealPassword123
       interval: 10s
       timeout: 5s
       retries: 5
@@ -20,7 +21,7 @@ services:
       PGHOST: postgresql
       PGPORT: 5432
       PGPASSWORD: NotARealPassword123
-      PGUSER: postgres
+      PGUSER: opgadmin
     volumes:
       - ./test/setup_sirius_db.sql:/tmp/setup_sirius_db.sql
     command: psql --file=/tmp/setup_sirius_db.sql
@@ -31,7 +32,7 @@ services:
       PGHOST: postgresql
       PGPORT: 5432
       PGPASSWORD: NotARealPassword123
-      PGUSER: postgres
+      PGUSER: opgadmin
       DATABASE_NAME: api
       SEARCH_APP_USER_PASSWORD: NotARealSearchPassword123
       SIRIUS_APP_USER_PASSWORD: NotARealSiriusPassword123

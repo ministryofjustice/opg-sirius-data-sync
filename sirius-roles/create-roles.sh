@@ -2,13 +2,13 @@
 create_login_role() {
     USER_NAME=$1
     PASSWORD=$2
-    psql -U postgres -v user_name=$USER_NAME -v user_password=$PASSWORD --file=./create_role.sql 2> /dev/null 
+    psql -U $PGUSER -v user_name=$USER_NAME -v user_password=$PASSWORD --file=./create_role.sql 2> /dev/null 
 }
 
 create_permissions() {
     USER_NAME=$1
     DATABASE_NAME=$2
-    psql -U postgres --dbname=$DATABASE_NAME -v user_name=$USER_NAME -v database_name=$DATABASE_NAME --file=./"$USER_NAME".sql 2> /dev/null
+    psql -U $PGUSER --dbname=$DATABASE_NAME -v user_name=$USER_NAME -v database_name=$DATABASE_NAME --file=./"$USER_NAME".sql 2> /dev/null
 }
 
 SEARCH_APP_USER="search-app"
@@ -30,7 +30,7 @@ create_login_role $SUPERVISION_FINANCE_APP_USER $SUPERVISION_FINANCE_APP_USER_PA
 create_login_role $OPERATOR_ROLE $OPERATOR_PASSWORD
 
 # Revoke Create on Public
-psql -U postgres --dbname=$DATABASE_NAME --command='REVOKE CREATE ON SCHEMA public FROM PUBLIC;'
+psql -U $PGUSER --dbname=$DATABASE_NAME --command='REVOKE CREATE ON SCHEMA public FROM PUBLIC;'
 
 # Grant Search App User Permissions
 create_permissions $SEARCH_APP_USER $DATABASE_NAME
