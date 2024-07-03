@@ -64,6 +64,30 @@ control 'Database Sync' do
     it { should exist }
     its('mode') { should cmp '0644'}
   end
+  describe file('/app/create_role.sql') do
+    it { should exist }
+    its('mode') { should cmp '0644'}
+  end
+  describe file('/app/create-roles.sh') do
+    it { should exist }
+    its('mode') { should cmp '0755'}
+  end
+  describe file('/app/operator.sql') do
+    it { should exist }
+    its('mode') { should cmp '0644'}
+  end
+  describe file('/app/search-app.sql') do
+    it { should exist }
+    its('mode') { should cmp '0644'}
+  end
+  describe file('/app/sirius-app.sql') do
+    it { should exist }
+    its('mode') { should cmp '0644'}
+  end
+  describe file('/app/supervision-finance-app.sql') do
+    it { should exist }
+    its('mode') { should cmp '0644'}
+  end
 end
 
 control 'AWS CLI' do

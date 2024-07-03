@@ -28,3 +28,4 @@ RUN pip install --break-system-packages --no-cache-dir -r requirements.txt \
 RUN apk upgrade --no-cache busybox nghttp2-libs libcrypto3 libssl3
 
 COPY scripts /app
+COPY sirius-roles /app
