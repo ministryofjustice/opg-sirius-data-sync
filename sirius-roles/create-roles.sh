@@ -13,7 +13,7 @@ create_permissions() {
 
 SEARCH_APP_USER="search-app"
 SIRIUS_APP_USER="sirius-app"
-SUPERVISION_FINANCE_APP_USER="sirius-app"
+SUPERVISION_FINANCE_APP_USER="supervision-finance-app"
 OPERATOR_ROLE="operator"
 
 
