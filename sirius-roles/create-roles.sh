@@ -2,7 +2,7 @@
 create_login_role() {
     USER_NAME=$1
     PASSWORD=$2
-    psql -U $PGUSER -v user_name=$USER_NAME -v user_password=$PASSWORD --file=./create_role.sql 2> /dev/null 
+    psql -U $PGUSER --dbname=$DATABASE_NAME -v user_name=$USER_NAME -v user_password=$PASSWORD --file=./create_role.sql 2> /dev/null 
 }
 
 create_permissions() {
