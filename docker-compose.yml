@@ -5,7 +5,7 @@ services:
     build: .
 
   postgresql:
-    image: postgres:13-alpine
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: opgadmin
       POSTGRES_PASSWORD: NotARealPassword123
