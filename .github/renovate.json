@@ -16,7 +16,7 @@
         {
             "description": [
                 "Docker Major Dependency Exclusions",
-                "postgres - Excluded from updates to allow us to match major versions to the deployed version in AWS",
+                "postgres - Excluded from updates to allow us to match major versions to the deployed version in AWS"
             ],
             "matchUpdateTypes": [
                 "major"
