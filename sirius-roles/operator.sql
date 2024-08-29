@@ -19,3 +19,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA supervision GRANT SELECT ON TABLES TO :"user_
 GRANT USAGE ON SCHEMA supervision_finance TO :"user_name";
 GRANT SELECT ON ALL TABLES IN SCHEMA supervision_finance TO :"user_name";
 ALTER DEFAULT PRIVILEGES IN SCHEMA supervision_finance GRANT SELECT ON TABLES TO :"user_name";
+
+/* add operator to groups to allow viewing of running query stats and rogue query management */
+GRANT pg_read_all_stats TO :"user_name";
+GRANT pg_signal_backend TO :"user_name";
