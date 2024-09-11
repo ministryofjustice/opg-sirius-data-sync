@@ -111,6 +111,7 @@ jobs:
           if [ $BRANCH_NAME == "main" ]; then
             docker tag data-sync:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:latest
             docker tag data-sync:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:main-${{ steps.bump_version.outputs.tag }}
+            docker tag data-sync:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:main-${{ steps.bump_version.outputs.tag }}-$(date +"%Y%m%d%H%M%S")
             # We want all of the tags pushed
             docker push --all-tags $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY
           else
