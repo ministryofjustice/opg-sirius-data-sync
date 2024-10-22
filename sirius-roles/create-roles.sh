@@ -13,6 +13,7 @@ create_permissions() {
 
 SEARCH_APP_USER="search-app"
 SIRIUS_APP_USER="sirius-app"
+SUPERVISION_FINANCE_ADMIN_APP_USER="supervision-finance-admin-app"
 SUPERVISION_FINANCE_APP_USER="supervision-finance-app"
 OPERATOR_ROLE="operator"
 
@@ -22,6 +23,9 @@ create_login_role $SEARCH_APP_USER $SEARCH_APP_USER_PASSWORD
 
 # Create Sirius App User
 create_login_role $SIRIUS_APP_USER $SIRIUS_APP_USER_PASSWORD
+
+# Create Supervision Finance Admin App User
+create_login_role $SUPERVISION_FINANCE_ADMIN_APP_USER $SUPERVISION_FINANCE_ADMIN_APP_USER_PASSWORD
 
 # Create Supervision Finance App User
 create_login_role $SUPERVISION_FINANCE_APP_USER $SUPERVISION_FINANCE_APP_USER_PASSWORD
@@ -37,6 +41,9 @@ create_permissions $SEARCH_APP_USER $DATABASE_NAME
 
 # Grant Sirius App User Permissions
 create_permissions $SIRIUS_APP_USER $DATABASE_NAME
+
+# Grant Supervision Finance App Admin User Permissions
+create_permissions $SUPERVISION_FINANCE_ADMIN_APP_USER $DATABASE_NAME
 
 # Grant Supervision Finance App User Permissions
 create_permissions $SUPERVISION_FINANCE_APP_USER $DATABASE_NAME
