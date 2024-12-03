@@ -27,3 +27,10 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA supervision_finance
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA supervision_finance TO :"user_name";
 ALTER DEFAULT PRIVILEGES IN SCHEMA supervision_finance GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO :"user_name";
 ALTER DEFAULT PRIVILEGES IN SCHEMA supervision_finance GRANT USAGE, SELECT ON SEQUENCES TO :"user_name";
+
+/* analytics_export schema read/insert acces */
+GRANT USAGE ON SCHEMA analytics_export TO :"user_name";
+GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA analytics_export TO :"user_name";
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA analytics_export TO :"user_name";
+ALTER DEFAULT PRIVILEGES IN SCHEMA analytics_export GRANT SELECT, INSERT ON TABLES TO :"user_name";
+ALTER DEFAULT PRIVILEGES IN SCHEMA analytics_export GRANT USAGE, SELECT ON SEQUENCES TO :"user_name";
