@@ -1,7 +1,7 @@
 SHELL = '/bin/bash'
 export DOCKER_BUILDKIT ?= 1
 
-all: build scan test test-role-setup cleanup
+all: build scan test test-role-setup test-database-tuning cleanup
 
 build:
 	docker compose build data-sync
@@ -18,6 +18,12 @@ test-role-setup:
 	docker compose up --wait -d postgresql
 	docker compose run --rm create-database
 	docker compose run --rm create-roles
+	docker compose down
+
+test-database-tuning:
+	docker compose up --wait -d postgresql
+	docker compose run --rm create-database
+	docker compose run --rm database-tuning
 	docker compose down
 
 cleanup:
