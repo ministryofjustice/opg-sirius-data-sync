@@ -39,3 +39,13 @@ services:
       SUPERVISION_FINANCE_APP_USER_PASSWORD: NotARealFinancePassword123
       OPERATOR_PASSWORD: NotARealOperatorPassword123
     command: /app/create-roles.sh
+
+  database-tuning:
+    image: data-sync:latest
+    environment:
+      PGHOST: postgresql
+      PGPORT: 5432
+      PGPASSWORD: NotARealPassword123
+      PGUSER: opgadmin
+      DATABASE_NAME: api
+    command: /app/database-tuning.sh

@@ -72,6 +72,10 @@ control 'Database Sync' do
     it { should exist }
     its('mode') { should cmp '0755'}
   end
+  describe file('/app/database-tuning.sh') do
+    it { should exist }
+    its('mode') { should cmp '0755'}
+  end
   describe file('/app/operator.sql') do
     it { should exist }
     its('mode') { should cmp '0644'}

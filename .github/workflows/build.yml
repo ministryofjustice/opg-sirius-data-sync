@@ -55,6 +55,9 @@ jobs:
           make test
           make cleanup
 
+      - name: Test Database Tuning Script
+        run: make test-database-tuning
+        
       - name: Test User Role Setup
         run: make test-role-setup
 
