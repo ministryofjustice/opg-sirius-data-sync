@@ -1,12 +1,12 @@
-FROM alpine:3.20 AS builder
+FROM alpine:3.21 AS builder
 
 RUN mkdir /install
-RUN apk update && apk add postgresql14-dev gcc python3-dev py3-pip musl-dev
+RUN apk update && apk add postgresql15-dev gcc python3-dev py3-pip musl-dev
 WORKDIR /install
 RUN pip install --prefix=/install psycopg2
 
 
-FROM alpine:3.20
+FROM alpine:3.21
 
 COPY --from=builder /install/lib/python3.12/site-packages/ /usr/lib/python3.12/site-packages/
 WORKDIR /app/
@@ -14,7 +14,7 @@ WORKDIR /app/
 COPY scripts/requirements.txt /app/requirements.txt
 RUN apk --update --no-cache add \
   aws-cli \
-  postgresql14 \
+  postgresql15 \
   python3 \
   bash \
   curl \
