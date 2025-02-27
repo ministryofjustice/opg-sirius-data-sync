@@ -2,7 +2,11 @@
 services:
   data-sync:
     image: data-sync:latest
-    build: .
+    build:
+      context: .
+      platforms:
+        - "linux/arm64/v8"
+        - "linux/amd64"
 
   postgresql:
     image: postgres:13-alpine
