@@ -4,7 +4,11 @@ export DOCKER_BUILDKIT ?= 1
 all: build scan test test-role-setup test-database-tuning cleanup
 
 build:
-	docker compose build data-sync
+	docker buildx build \
+		--platform linux/amd64,linux/arm64/v8 \
+		--tag data-sync:latest \
+		--load \
+		.
 
 scan:
 	trivy image data-sync:latest
