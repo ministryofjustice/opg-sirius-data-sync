@@ -1,5 +1,8 @@
 GRANT CONNECT ON DATABASE :"database_name" TO :"user_name";
 
+/* log statement usage for audit */
+ALTER ROLE :"user_name" SET log_statement="all";
+
 /* public schema read acces */
 GRANT USAGE ON SCHEMA public TO :"user_name";
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO :"user_name";

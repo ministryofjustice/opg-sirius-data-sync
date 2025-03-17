@@ -22,6 +22,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Extract branch name
+        run: |
+          if [ "${{ github.head_ref }}" == "" ]; then
+            echo BRANCH_NAME=main >> $GITHUB_ENV
+          else
+            echo BRANCH_NAME=$(echo ${{ github.head_ref }} | sed 's/\//-/g') >> $GITHUB_ENV
+          fi
+        id: extract_branch
+
       - name: Bump version
         id: bump_version
         uses: anothrNick/github-tag-action@1.71.0
@@ -85,15 +94,6 @@ jobs:
         with:
           check_name: "Inspec Test Results"
           files: data-sync-inspec.xml
-
-      - name: Extract branch name
-        run: |
-          if [ "${{ github.head_ref }}" == "" ]; then
-            echo BRANCH_NAME=main >> $GITHUB_ENV
-          else
-            echo BRANCH_NAME=$(echo ${{ github.head_ref }} | sed 's/\//-/g') >> $GITHUB_ENV
-          fi
-        id: extract_branch
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
