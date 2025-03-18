@@ -15,8 +15,15 @@ defaults:
 
 jobs:
   build:
-    name: Build, Test & Publish Image
+    name: Build Image
+    uses: ministryofjustice/opg-github-workflows/.github/workflows/build-multi-architecture-image.yml@v3.10.0
+    with:
+      image_name: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/data-sync
+  
+  push:
+    name: Test & Publish Image
     runs-on: ubuntu-latest
+    needs: [build]
     outputs:
       tag: ${{ steps.bump_version.outputs.tag }}
     steps:
@@ -43,20 +50,23 @@ jobs:
           RELEASE_BRANCHES: main
           WITH_V: true
 
-      - name: Setup Docker
+      - name: Set up Docker
         run: |
           echo '{"experimental": true, "features": { "containerd-snapshotter": true }}' | sudo tee -a /etc/docker/daemon.json
           sudo systemctl restart docker
           docker run --privileged --rm tonistiigi/binfmt --install all
-
-      - name: Build Container
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/images
+          name: multi-arch-image
+      - name: Load Image
         run: |
-          make build
+          docker load -i /tmp/images/multi-arch-image.tar
 
       - name: Trivy Image Vulnerability Scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: data-sync:latest
+          image-ref: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/data-sync:latest
           severity: 'MEDIUM,HIGH,CRITICAL'
           format: 'template'
           template: '@/contrib/sarif.tpl'
@@ -111,16 +121,15 @@ jobs:
         with:
           registries: 311462405659
 
-      - name: Push Container
+      - name: Push & Tag
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           DATA_SYNC_ECR_REPOSITORY: sirius/data-sync
         run: |
-          docker tag data-sync:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+          docker tag $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
           if [ $BRANCH_NAME == "main" ]; then
-            docker tag data-sync:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:latest
-            docker tag data-sync:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:main-${{ steps.bump_version.outputs.tag }}
-            docker tag data-sync:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:main-${{ steps.bump_version.outputs.tag }}-$(date +"%Y%m%d%H%M%S")
+            docker tag $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:main-${{ steps.bump_version.outputs.tag }}
+            docker tag $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:main-${{ steps.bump_version.outputs.tag }}-$(date +"%Y%m%d%H%M%S")
             # We want all of the tags pushed
             docker push --all-tags $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY
           else
@@ -130,7 +139,7 @@ jobs:
   push-version:
     name: Push Version to Parameter Store & Trigger Deploy
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, push]
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
@@ -151,7 +160,7 @@ jobs:
 
       - name: Push Tag to Parameter Store
         run: |
-          aws ssm put-parameter --name "opg-sirius-data-sync-latest-green-build" --type "String" --value "${{ needs.build.outputs.tag}}" --overwrite --region=eu-west-1
+          aws ssm put-parameter --name "opg-sirius-data-sync-latest-green-build" --type "String" --value "${{ needs.push.outputs.tag}}" --overwrite --region=eu-west-1
 
       - name: Trigger Dev Deploy
         shell: bash
