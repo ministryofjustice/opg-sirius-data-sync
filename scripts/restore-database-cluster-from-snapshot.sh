@@ -30,10 +30,6 @@ if [ -z "$SKIP_SNAPSHOT" ]; then
   SKIP_SNAPSHOT="false"
 fi
 
-if [ -z "$CLUSTER_NODES" ]; then
-  CLUSTER_NODES="3"
-fi
-
 . restore-database-methods.sh
 
 echo "INFO - Restoring $DATABASE_CLUSTER from $LOCAL_SNAPSHOT"
@@ -43,19 +39,21 @@ aws rds modify-db-cluster \
     --no-deletion-protection \
     --apply-immediately
 
-if [ "$CLUSTER_NODES" == "1" ]; then
-    echo "INFO - Deleting Single AZ Instance"
-    delete_db_instance $DATABASE_CLUSTER-0
-    wait_for_db_instance_deleted $DATABASE_CLUSTER-0
-else
-    echo "INFO - Deleting Multi AZ Instances"
-    delete_db_instance $DATABASE_CLUSTER-0
-    delete_db_instance $DATABASE_CLUSTER-1
-    delete_db_instance $DATABASE_CLUSTER-2
-    wait_for_db_instance_deleted $DATABASE_CLUSTER-0
-    wait_for_db_instance_deleted $DATABASE_CLUSTER-1
-    wait_for_db_instance_deleted $DATABASE_CLUSTER-2
-fi
+INSTANCES=$(aws rds describe-db-clusters --db-cluster-identifier api-adhoc | jq "[.DBClusters[0].DBClusterMembers[].DBInstanceIdentifier]|sort|.[]")
+echo "INFO - Cluster Instances:-"
+echo "INFO - $INSTANCES"
+
+echo "INFO - Deleting Cluster Instances"
+for INSTANCE in $INSTANCES
+do
+    delete_db_instance $INSTANCE
+done
+
+echo "INFO - Waiting for Deletion to Complete"
+for INSTANCE in $INSTANCES
+do
+    wait_for_db_instance_deleted $INSTANCE
+done
 
 echo "INFO - Deleting Cluster"
 if [ "$SKIP_SNAPSHOT" == "true" ]; then
@@ -89,19 +87,21 @@ aws rds restore-db-cluster-from-snapshot \
     --serverless-v2-scaling-configuration MinCapacity=$SERVERLESS_MIN_CAPACITY,MaxCapacity=$SERVERLESS_MAX_CAPACITY
 wait_for_db_cluster_available "$DATABASE_CLUSTER"
 
-if [ "$CLUSTER_NODES" == "1" ]; then
-    echo "INFO - Creating Single AZ Instance for $DATABASE_CLUSTER"
-    create_db_instance $DATABASE_CLUSTER $DATABASE_CLUSTER-0 eu-west-1a
-    wait_for_db_instance_available $DATABASE_CLUSTER-0
-else
-    echo "INFO - Creating Multi AZ Instances for $DATABASE_CLUSTER"
-    create_db_instance $DATABASE_CLUSTER $DATABASE_CLUSTER-0 eu-west-1a $WRITER_INSTANCE_CLASS
-    create_db_instance $DATABASE_CLUSTER $DATABASE_CLUSTER-1 eu-west-1b $READER_INSTANCE_CLASS
-    create_db_instance $DATABASE_CLUSTER $DATABASE_CLUSTER-2 eu-west-1c $READER_INSTANCE_CLASS
-    wait_for_db_instance_available $DATABASE_CLUSTER-0
-    wait_for_db_instance_available $DATABASE_CLUSTER-1
-    wait_for_db_instance_available $DATABASE_CLUSTER-2
-fi
+AZ_ZONES=(a b c)
+echo "INFO - Creating Multi AZ Instances for $DATABASE_CLUSTER"
+POSITION=0
+for INSTANCE in $INSTANCES
+do
+    echo "Creating Cluster Instance $INSTANCE in eu-west-${AZ_ZONES[$POSITION]}"
+    create_db_instance $DATABASE_CLUSTER $INSTANCE eu-west-${AZ_ZONES[$POSITION]}
+    POSITION=$[$POSITION+1]
+done
+
+echo "INFO - Waiting for Instance Creation to Complete"
+for INSTANCE in $INSTANCES
+do
+    wait_for_db_instance_available $INSTANCE
+done
 
 echo "INFO - Reset Database Password"
 aws rds modify-db-cluster --db-cluster-identifier "$DATABASE_CLUSTER" \
