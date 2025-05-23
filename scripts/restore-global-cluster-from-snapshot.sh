@@ -15,7 +15,6 @@ set -o pipefail
 GLOBAL_CLUSTER=$ENVIRONMENT_NAME-$DATABASE-global
 REGIONAL_CLUSTER=$DATABASE-$ENVIRONMENT_NAME
 SNAPSHOT_FOR_RESTORE=$REGIONAL_CLUSTER-snapshot-for-restore
-DR_REGION_NO_COMPUTE=true
 
 # Lookup RDS Password
 RDS_PASSWORD=$(aws secretsmanager get-secret-value \
@@ -92,7 +91,6 @@ PRIMARY_INSTANCE_CLASS=$(aws rds describe-db-instances \
 check_look_up_exists "$PRIMARY_INSTANCE_CLASS"
 
 # Lookup Secondary DB Instance Class
-if [ "$DR_REGION_NO_COMPUTE" != "true" ]
 then
     DR_INSTANCE_CLASS=$(aws rds describe-db-instances \
         --region $DR_REGION \
@@ -151,16 +149,21 @@ aws rds remove-from-global-cluster --region $DR_REGION --global-cluster-identifi
 wait_for_db_cluster_available $DR_REGION $DR_CLUSTER_ARN
 
 # Delete $DR_REGION cluster
-if [ "$DR_REGION_NO_COMPUTE" != "true" ]
-then
-    echo "INFO - Deleting Cluster instances for $DR_REGION"
-    aws rds delete-db-instance --region $DR_REGION --db-instance-identifier $REGIONAL_CLUSTER-0
-    aws rds delete-db-instance --region $DR_REGION --db-instance-identifier $REGIONAL_CLUSTER-1
-    aws rds delete-db-instance --region $DR_REGION --db-instance-identifier $REGIONAL_CLUSTER-2
-    wait_for_db_instance_deleted $DR_REGION $REGIONAL_CLUSTER-0
-    wait_for_db_instance_deleted $DR_REGION $REGIONAL_CLUSTER-1
-    wait_for_db_instance_deleted $DR_REGION $REGIONAL_CLUSTER-2
-fi
+DR_INSTANCES=$(aws rds describe-db-clusters --region $DR_REGION --db-cluster-identifier $DR_CLUSTER_ARN | jq -r "[.DBClusters[0].DBClusterMembers[].DBInstanceIdentifier]|sort|.[]")
+echo "INFO - DR Cluster Instances:-"
+echo "INFO - $DR_INSTANCES"
+
+echo "INFO - Deleting DR Cluster Instances"
+for DR_INSTANCE in $DR_INSTANCES
+do
+    aws rds delete-db-instance --region $DR_REGION --db-instance-identifier $DR_INSTANCE
+done
+
+echo "INFO - Waiting for Deletion to Complete"
+for DR_INSTANCE in $DR_INSTANCES
+do
+    wait_for_db_instance_deleted $DR_REGION $DR_INSTANCE
+done
 
 echo "INFO - Removing Deletion Protection for $DR_REGION $REGIONAL_CLUSTER"
 aws rds modify-db-cluster --region $DR_REGION --db-cluster-identifier $REGIONAL_CLUSTER --no-deletion-protection --apply-immediately
@@ -183,13 +186,21 @@ aws rds delete-global-cluster --region $PRIMARY_REGION --global-cluster-identifi
 wait_for_global_cluster_deleted $PRIMARY_REGION $GLOBAL_CLUSTER
 
 # Delete $PRIMARY_REGION cluster instances
-echo "INFO - Deleting Cluster instances for $PRIMARY_REGION"
-aws rds delete-db-instance --region $PRIMARY_REGION --db-instance-identifier $REGIONAL_CLUSTER-0
-aws rds delete-db-instance --region $PRIMARY_REGION --db-instance-identifier $REGIONAL_CLUSTER-1
-aws rds delete-db-instance --region $PRIMARY_REGION --db-instance-identifier $REGIONAL_CLUSTER-2
-wait_for_db_instance_deleted $PRIMARY_REGION $REGIONAL_CLUSTER-0
-wait_for_db_instance_deleted $PRIMARY_REGION $REGIONAL_CLUSTER-1
-wait_for_db_instance_deleted $PRIMARY_REGION $REGIONAL_CLUSTER-2
+PRIMARY_INSTANCES=$(aws rds describe-db-clusters --region $DR_REGION --db-cluster-identifier $DR_CLUSTER_ARN | jq -r "[.DBClusters[0].DBClusterMembers[].DBInstanceIdentifier]|sort|.[]")
+echo "INFO - Primary Cluster Instances:-"
+echo "INFO - $PRIMARY_INSTANCES"
+
+echo "INFO - Deleting Primary Cluster Instances"
+for PRIMARY_INSTANCE in $PRIMARY_INSTANCES
+do
+    aws rds delete-db-instance --region $PRIMARY_REGION --db-instance-identifier $PRIMARY_INSTANCE
+done
+
+echo "INFO - Waiting for Deletion to Complete"
+for PRIMARY_INSTANCE in $PRIMARY_INSTANCES
+do
+    wait_for_db_instance_deleted $PRIMARY_REGION $PRIMARY_INSTANCE
+done
 
 # Disable $PRIMARY_REGION cluster deletion protection
 echo "INFO - Removing Deletion Protection $PRIMARY_REGION $REGIONAL_CLUSTER"
@@ -223,82 +234,44 @@ aws rds restore-db-cluster-from-snapshot \
 wait_for_db_cluster_available $PRIMARY_REGION $REGIONAL_CLUSTER
 
 # Add Instances to $PRIMARY_REGION Cluster
-echo "INFO - Creating cluster instances for $PRIMARY_REGION $REGIONAL_CLUSTER"
-aws rds create-db-instance \
-    --region $PRIMARY_REGION \
-    --db-instance-identifier $REGIONAL_CLUSTER-0 \
-    --db-instance-class $PRIMARY_INSTANCE_CLASS \
-    --engine aurora-postgresql \
-    --availability-zone $PRIMARY_REGION"a" \
-    --db-cluster-identifier $REGIONAL_CLUSTER \
-    --ca-certificate-identifier rds-ca-rsa2048-g1 \
-    --no-auto-minor-version-upgrade \
-    --promotion-tier 0 \
-    --monitoring-interval 30 \
-    --monitoring-role-arn $MONITORING_ROLE \
-    --enable-performance-insights \
-    --performance-insights-retention-period 7 \
-    --tags \
-    Key=account,Value="$ACCOUNT_NAME" \
-    Key=application,Value="Sirius" \
-    Key=business-unit,Value="OPG" \
-    Key=environment-name,Value="$ENVIRONMENT_NAME" \
-    Key=infrastructure-support,Value="opgteam@digital.justice.gov.uk" \
-    Key=is-production,Value="false" \
-    Key=owner,Value="opgteam@digital.justice.gov.uk" \
-    Key=source-code,Value="https://github.com/ministryofjustice/opg-sirius-infrastructure"
+PRIMARY_AZ_ZONES=(a b c)
+echo "INFO - Creating Multi AZ Instances for $DATABASE_CLUSTER"
+PRIMARY_POSITION=0
+for PRIMARY_INSTANCE in $PRIMARY_INSTANCES
+do
+    echo "Creating Cluster Instance $PRIMARY_INSTANCE in $PRIMARY_REGION${PRIMARY_AZ_ZONES[$PRIMARY_POSITION]}"
+    aws rds create-db-instance \
+        --region $PRIMARY_REGION \
+        --db-instance-identifier $PRIMARY_INSTANCE \
+        --db-instance-class $PRIMARY_INSTANCE_CLASS \
+        --engine aurora-postgresql \
+        --availability-zone $PRIMARY_REGION${PRIMARY_AZ_ZONES[$PRIMARY_POSITION]} \
+        --db-cluster-identifier $REGIONAL_CLUSTER \
+        --ca-certificate-identifier rds-ca-rsa2048-g1 \
+        --no-auto-minor-version-upgrade \
+        --promotion-tier 0 \
+        --monitoring-interval 30 \
+        --monitoring-role-arn $MONITORING_ROLE \
+        --enable-performance-insights \
+        --performance-insights-retention-period 7 \
+        --tags \
+        Key=account,Value="$ACCOUNT_NAME" \
+        Key=application,Value="Sirius" \
+        Key=business-unit,Value="OPG" \
+        Key=environment-name,Value="$ENVIRONMENT_NAME" \
+        Key=infrastructure-support,Value="opgteam@digital.justice.gov.uk" \
+        Key=is-production,Value="false" \
+        Key=owner,Value="opgteam@digital.justice.gov.uk" \
+        Key=source-code,Value="https://github.com/ministryofjustice/opg-sirius-infrastructure"
 
-aws rds create-db-instance \
-    --region $PRIMARY_REGION \
-    --db-instance-identifier $REGIONAL_CLUSTER-1 \
-    --db-instance-class $PRIMARY_INSTANCE_CLASS \
-    --engine aurora-postgresql \
-    --availability-zone $PRIMARY_REGION"b" \
-    --db-cluster-identifier $REGIONAL_CLUSTER \
-    --ca-certificate-identifier rds-ca-rsa2048-g1 \
-    --no-auto-minor-version-upgrade \
-    --promotion-tier 0 \
-    --monitoring-interval 30 \
-    --monitoring-role-arn $MONITORING_ROLE \
-    --enable-performance-insights \
-    --performance-insights-retention-period 7 \
-    --tags \
-    Key=account,Value="$ACCOUNT_NAME" \
-    Key=application,Value="Sirius" \
-    Key=business-unit,Value="OPG" \
-    Key=environment-name,Value="$ENVIRONMENT_NAME" \
-    Key=infrastructure-support,Value="opgteam@digital.justice.gov.uk" \
-    Key=is-production,Value="false" \
-    Key=owner,Value="opgteam@digital.justice.gov.uk" \
-    Key=source-code,Value="https://github.com/ministryofjustice/opg-sirius-infrastructure"
+    PRIMARY_POSITION=$[$PRIMARY_POSITION+1]
+done
 
-aws rds create-db-instance \
-    --region $PRIMARY_REGION \
-    --db-instance-identifier $REGIONAL_CLUSTER-2 \
-    --db-instance-class $PRIMARY_INSTANCE_CLASS \
-    --engine aurora-postgresql \
-    --availability-zone $PRIMARY_REGION"c" \
-    --db-cluster-identifier $REGIONAL_CLUSTER \
-    --ca-certificate-identifier rds-ca-rsa2048-g1 \
-    --no-auto-minor-version-upgrade \
-    --promotion-tier 0 \
-    --monitoring-interval 30 \
-    --monitoring-role-arn $MONITORING_ROLE \
-    --enable-performance-insights \
-    --performance-insights-retention-period 7 \
-    --tags \
-    Key=account,Value="$ACCOUNT_NAME" \
-    Key=application,Value="Sirius" \
-    Key=business-unit,Value="OPG" \
-    Key=environment-name,Value="$ENVIRONMENT_NAME" \
-    Key=infrastructure-support,Value="opgteam@digital.justice.gov.uk" \
-    Key=is-production,Value="false" \
-    Key=owner,Value="opgteam@digital.justice.gov.uk" \
-    Key=source-code,Value="https://github.com/ministryofjustice/opg-sirius-infrastructure"
-
-wait_for_db_instance_available $PRIMARY_REGION $REGIONAL_CLUSTER-0
-wait_for_db_instance_available $PRIMARY_REGION $REGIONAL_CLUSTER-1
-wait_for_db_instance_available $PRIMARY_REGION $REGIONAL_CLUSTER-2
+echo "INFO - Waiting for Primary Cluster Instance Creation to Complete"
+for PRIMARY_INSTANCE in $PRIMARY_INSTANCES
+do
+    wait_for_db_instance_available $PRIMARY_REGION $PRIMARY_INSTANCE
+done
 
 # Create Global Cluster from $PRIMARY_REGION cluster
 echo "INFO - Creating global cluster $GLOBAL_CLUSTER from $PRIMARY_REGION $REGIONAL_CLUSTER"
@@ -332,15 +305,19 @@ aws rds create-db-cluster \
 wait_for_db_cluster_available $DR_REGION $REGIONAL_CLUSTER
 
 # Add Instances to $DR_REGION Cluster
-if [ "$DR_REGION_NO_COMPUTE" != "true" ]
-then
-    echo "INFO - Creating cluster instances from $DR_REGION $REGIONAL_CLUSTER"
+
+DR_AZ_ZONES=(a b c)
+echo "INFO - Creating DR Region Instances for $DATABASE_CLUSTER"
+DR_POSITION=0
+for DR_INSTANCE in $DR_INSTANCES
+do
+    echo "Creating DR Region Cluster Instance $DR_INSTANCE in $DR_REGION${DR_AZ_ZONES[$DR_POSITION]}"
     aws rds create-db-instance \
         --region $DR_REGION \
-        --db-instance-identifier $REGIONAL_CLUSTER-0 \
+        --db-instance-identifier $DR_INSTANCE \
         --db-instance-class $DR_INSTANCE_CLASS \
         --engine aurora-postgresql \
-        --availability-zone $DR_REGION"a" \
+        --availability-zone $DR_REGION${DR_AZ_ZONES[$DR_POSITION]} \
         --db-cluster-identifier $REGIONAL_CLUSTER \
         --ca-certificate-identifier rds-ca-rsa2048-g1 \
         --no-auto-minor-version-upgrade \
@@ -359,59 +336,14 @@ then
         Key=owner,Value="opgteam@digital.justice.gov.uk" \
         Key=source-code,Value="https://github.com/ministryofjustice/opg-sirius-infrastructure"
 
-    aws rds create-db-instance \
-        --region $DR_REGION \
-        --db-instance-identifier $REGIONAL_CLUSTER-1 \
-        --db-instance-class $DR_INSTANCE_CLASS \
-        --engine aurora-postgresql \
-        --availability-zone $DR_REGION"b" \
-        --db-cluster-identifier $REGIONAL_CLUSTER \
-        --ca-certificate-identifier rds-ca-rsa2048-g1 \
-        --no-auto-minor-version-upgrade \
-        --promotion-tier 0 \
-        --monitoring-interval 30 \
-        --monitoring-role-arn $MONITORING_ROLE \
-        --enable-performance-insights \
-        --performance-insights-retention-period 7 \
-        --tags \
-        Key=account,Value="$ACCOUNT_NAME" \
-        Key=application,Value="Sirius" \
-        Key=business-unit,Value="OPG" \
-        Key=environment-name,Value="$ENVIRONMENT_NAME" \
-        Key=infrastructure-support,Value="opgteam@digital.justice.gov.uk" \
-        Key=is-production,Value="false" \
-        Key=owner,Value="opgteam@digital.justice.gov.uk" \
-        Key=source-code,Value="https://github.com/ministryofjustice/opg-sirius-infrastructure"
+    DR_POSITION=$[$DR_POSITION+1]
+done
 
-    aws rds create-db-instance \
-        --region $DR_REGION \
-        --db-instance-identifier $REGIONAL_CLUSTER-2 \
-        --db-instance-class $DR_INSTANCE_CLASS \
-        --engine aurora-postgresql \
-        --availability-zone $DR_REGION"c" \
-        --db-cluster-identifier $REGIONAL_CLUSTER \
-        --ca-certificate-identifier rds-ca-rsa2048-g1 \
-        --no-auto-minor-version-upgrade \
-        --promotion-tier 0 \
-        --monitoring-interval 30 \
-        --monitoring-role-arn $MONITORING_ROLE \
-        --enable-performance-insights \
-        --performance-insights-retention-period 7 \
-        --tags \
-        Key=account,Value="$ACCOUNT_NAME" \
-        Key=application,Value="Sirius" \
-        Key=business-unit,Value="OPG" \
-        Key=environment-name,Value="$ENVIRONMENT_NAME" \
-        Key=infrastructure-support,Value="opgteam@digital.justice.gov.uk" \
-        Key=is-production,Value="false" \
-        Key=owner,Value="opgteam@digital.justice.gov.uk" \
-        Key=source-code,Value="https://github.com/ministryofjustice/opg-sirius-infrastructure"
-
-    wait_for_db_instance_available $DR_REGION $REGIONAL_CLUSTER-0
-    wait_for_db_instance_available $DR_REGION $REGIONAL_CLUSTER-1
-    wait_for_db_instance_available $DR_REGION $REGIONAL_CLUSTER-2
-fi
-
+echo "INFO - Waiting for DR Cluster Instance Creation to Complete"
+for DR_INSTANCE in $DR_INSTANCES
+do
+    wait_for_db_instance_available $DR_REGION $DR_INSTANCE
+done
 
 # Update cluster password
 echo "INFO - Updating Cluster master password for $PRIMARY_REGION $REGIONAL_CLUSTER"
