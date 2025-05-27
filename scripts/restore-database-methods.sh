@@ -45,17 +45,11 @@ CLUSTER_ARN=$(aws rds describe-db-clusters --db-cluster-identifier "$DATABASE_CL
 check_look_up_exists "$CLUSTER_ARN"
 echo "INFO - DB Cluster ARN set to $CLUSTER_ARN"
 
-WRITER_INSTANCE_CLASS=$(aws rds describe-db-instances --db-instance-identifier "$DATABASE-$ENVIRONMENT_NAME-0" \
+INSTANCE_CLASS=$(aws rds describe-db-instances --db-instance-identifier "$DATABASE-$ENVIRONMENT_NAME-0" \
     --query=DBInstances[0].DBInstanceClass \
     --output text)
-check_look_up_exists "$WRITER_INSTANCE_CLASS"
-echo "INFO - Database Writer Instance Class set to $WRITER_INSTANCE_CLASS"
-
-READER_INSTANCE_CLASS=$(aws rds describe-db-instances --db-instance-identifier "$DATABASE-$ENVIRONMENT_NAME-1" \
-    --query=DBInstances[0].DBInstanceClass \
-    --output text)
-check_look_up_exists "$READER_INSTANCE_CLASS"
-echo "INFO - Database Reader Instance Class set to $READER_INSTANCE_CLASS"
+check_look_up_exists "$INSTANCE_CLASS"
+echo "INFO - Database Writer Instance Class set to $INSTANCE_CLASS"
 
 SECURITY_GROUP=$(aws rds describe-db-clusters --db-cluster-identifier "$DATABASE_CLUSTER" \
     --query=DBClusters[0].VpcSecurityGroups[0].VpcSecurityGroupId \
