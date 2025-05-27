@@ -60,6 +60,10 @@ control 'Database Sync' do
     it { should exist }
     its('mode') { should cmp '0755'}
   end
+  describe file('/app/upgrade-database-cluster.sh') do
+    it { should exist }
+    its('mode') { should cmp '0755'}
+  end
   describe file('/app/documents.py') do
     it { should exist }
     its('mode') { should cmp '0644'}
