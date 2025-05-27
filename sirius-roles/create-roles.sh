@@ -1,4 +1,4 @@
-#! /usr/bin/env sh
+#! /usr/bin/env bash
 create_login_role() {
     USER_NAME=$1
     PASSWORD=$2
