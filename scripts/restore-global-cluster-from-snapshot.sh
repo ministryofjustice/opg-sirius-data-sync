@@ -90,17 +90,21 @@ PRIMARY_INSTANCE_CLASS=$(aws rds describe-db-instances \
     --output text)
 check_look_up_exists "$PRIMARY_INSTANCE_CLASS"
 
-# Lookup Secondary DB Instance Class
+DR_INSTANCES=$(aws rds describe-db-clusters --region $DR_REGION --db-cluster-identifier $DR_CLUSTER_ARN | jq -r "[.DBClusters[0].DBClusterMembers[].DBInstanceIdentifier]|sort|.[]")
+
+if [ "$DR_INSTANCES" != "" ]
 then
+    echo "INFO - DR Instances Found"
     DR_INSTANCE_CLASS=$(aws rds describe-db-instances \
         --region $DR_REGION \
         --db-instance-identifier "$REGIONAL_CLUSTER-0" \
         --query=DBInstances[0].DBInstanceClass \
         --output text)
-    check_look_up_exists "$DR_INSTANCE_CLASS"
 else
+    echo "INFO - No DR Instances Found setting instance class to default"
     DR_INSTANCE_CLASS="db.serverless"
 fi
+check_look_up_exists "$DR_INSTANCE_CLASS"
 
 
 # Lookup Serverless Max Capacity
