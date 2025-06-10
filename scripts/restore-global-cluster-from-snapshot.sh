@@ -190,7 +190,7 @@ aws rds delete-global-cluster --region $PRIMARY_REGION --global-cluster-identifi
 wait_for_global_cluster_deleted $PRIMARY_REGION $GLOBAL_CLUSTER
 
 # Delete $PRIMARY_REGION cluster instances
-PRIMARY_INSTANCES=$(aws rds describe-db-clusters --region $DR_REGION --db-cluster-identifier $DR_CLUSTER_ARN | jq -r "[.DBClusters[0].DBClusterMembers[].DBInstanceIdentifier]|sort|.[]")
+PRIMARY_INSTANCES=$(aws rds describe-db-clusters --region $PRIMARY_REGION --db-cluster-identifier $PRIMARY_CLUSTER_ARN | jq -r "[.DBClusters[0].DBClusterMembers[].DBInstanceIdentifier]|sort|.[]")
 echo "INFO - Primary Cluster Instances:-"
 echo "INFO - $PRIMARY_INSTANCES"
 
