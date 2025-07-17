@@ -20,7 +20,7 @@ if [ -z "$ENVIRONMENT_NAME" ]; then
     exit 1
 fi
 
-if [ "$ENVIRONMENT_NAME" = "production" || "$ENVIRONMENT_NAME" = "preproduction" || "$ENVIRONMENT_NAME" = "dev" ]; then
+if [ "$ENVIRONMENT_NAME" = "production" ] || [ "$ENVIRONMENT_NAME" = "preproduction" ] || [ "$ENVIRONMENT_NAME" = "dev" ]; then
     echo "ERROR - You cannot upgrade the $ENVIRONMENT_NAME global database cluster."
     exit 1
 fi
