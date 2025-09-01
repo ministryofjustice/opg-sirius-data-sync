@@ -15,7 +15,7 @@ if [ -z "$SNAPSHOT_COPY_NAME" ]; then
 fi
 
 if [ -z "$KMS_KEY_ALIAS" ]; then
-  KMS_KEY_ALIAS=alias/rds-snapshot-reencryption-$ENVIRONMENT_NAME
+  KMS_KEY_ALIAS=alias/data-sync-rds-snapshot-reencryption-$ENVIRONMENT_NAME
 fi
 
 echo "INFO - SNAPSHOT_COPY_NAME set to $SNAPSHOT_COPY_NAME"
