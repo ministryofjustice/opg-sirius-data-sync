@@ -16,10 +16,12 @@ fi
 if [ "$RESTORE_FROM_TRAINING_DATA" == "true" ]; then
     echo "INFO - Restoring from training-data seeding env"
     export SOURCE_ENVIRONMENT=training-data
-else
-    echo "INFO - Restoring from $ENVIRONMENT"
+elif [ -n "$CUSTOM_ENV_TO_RESTORE_FROM" ]; then
+    export SOURCE_ENVIRONMENT=$CUSTOM_ENV_TO_RESTORE_FROM
+else 
     export SOURCE_ENVIRONMENT=$ENVIRONMENT
 fi
+echo "INFO - Restoring from $SOURCE_ENVIRONMENT"
 
 export AWS_DEFAULT_REGION=eu-west-1
 export BUCKET=db-backups.development.eu-west-1.sirius.opg.justice.gov.uk
