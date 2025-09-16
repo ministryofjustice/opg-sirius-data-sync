@@ -3,6 +3,11 @@
 set -e
 set -o pipefail
 
+if [ -z "$ACCOUNT_NAME" ]; then
+    echo "ERROR - You need to set the ACCOUNT_NAME environment variable."
+    exit 1
+fi
+
 if [ -z "$ENVIRONMENT_NAME" ]; then
     echo "ERROR - You need to set the ENVIRONMENT_NAME environment variable."
     exit 1
@@ -12,18 +17,6 @@ if [ -z "$DATABASE" ]; then
     echo "ERROR - You need to set the DATABASE environment variable."
     exit 1
 fi
-
-if [ -z "$DATABASE_VERSION" ]; then
-  DATABASE_VERSION="13.7"
-fi
-
-if [ -z "$PARAMETER_GROUP" ]; then
-  PARAMETER_GROUP="default.aurora-postgresql13"
-fi
-
-echo "INFO - Database Version set to $DATABASE_VERSION"
-DATABASE_CLUSTER=$DATABASE-$ENVIRONMENT_NAME
-echo "INFO - DATABASE_CLUSTER set to $DATABASE_CLUSTER"
 
 check_for_and_delete_snapshot() {
     SNAPSHOT=$1
