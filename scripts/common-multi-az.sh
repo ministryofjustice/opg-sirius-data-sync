@@ -3,17 +3,29 @@
 set -e
 set -o pipefail
 
+if [ -z "$ACCOUNT_NAME" ]; then
+    echo "ERROR - You need to set the ACCOUNT_NAME environment variable."
+    exit 1
+fi
+
+if [ -z "$DATABASE" ]; then
+    echo "ERROR - You need to set the DATABASE environment variable."
+    exit 1
+fi
+
 if [ -z "$ENVIRONMENT_NAME" ]; then
     echo "ERROR - You need to set the ENVIRONMENT_NAME environment variable."
     exit 1
 fi
 
-if [ -z "$DATABASE_VERSION" ]; then
-  DATABASE_VERSION="13.6"
+if [ -z "$PRIMARY_REGION" ]; then
+    echo "ERROR - You need to set the PRIMARY_REGION environment variable."
+    exit 1
 fi
 
-if [ -z "$PARAMETER_GROUP" ]; then
-  PARAMETER_GROUP="default.aurora-postgresql13"
+if [ -z "$DR_REGION" ]; then
+    echo "ERROR - You need to set the DR_REGION environment variable."
+    exit 1
 fi
 
 check_for_and_delete_snapshot() {
