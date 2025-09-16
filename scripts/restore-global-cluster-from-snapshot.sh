@@ -40,6 +40,22 @@ DR_CLUSTER_ARN=$(aws rds describe-db-clusters \
     --output text)
 check_look_up_exists "$DR_CLUSTER_ARN"
 
+# Lookup Current Database Engine Version
+DATABASE_VERSION=$(aws rds describe-db-clusters \
+    --region $PRIMARY_REGION \
+    --db-cluster-identifier "$REGIONAL_CLUSTER" \
+    --query=DBClusters[0].EngineVersion \
+    --output text)
+check_look_up_exists "$DATABASE_VERSION"
+
+# Lookup Current Cluster Parameter Group
+PARAMETER_GROUP=$(aws rds describe-db-clusters \
+    --region $PRIMARY_REGION \
+    --db-cluster-identifier "$REGIONAL_CLUSTER" \
+    --query=DBClusters[0].DBClusterParameterGroup \
+    --output text)
+check_look_up_exists "$PARAMETER_GROUP"
+
 # Lookup Primary Region DB Security Group
 PRIMARY_SECURITY_GROUP=$(aws rds describe-db-clusters \
     --region $PRIMARY_REGION \
@@ -131,6 +147,8 @@ echo "INFO - GLOBAL_CLUSTER: $GLOBAL_CLUSTER"
 echo "INFO - REGIONAL_CLUSTER: $REGIONAL_CLUSTER"
 echo "INFO - SNAPSHOT_FOR_RESTORE: $SNAPSHOT_FOR_RESTORE"
 echo "INFO - Cluster Config:-"
+echo "INFO - DATABASE_VERSION=$DATABASE_VERSION"
+echo "INFO - PARAMETER_GROUP=$PARAMETER_GROUP"
 echo "INFO - PRIMARY_CLUSTER_ARN=$PRIMARY_CLUSTER_ARN"
 echo "INFO - DR_CLUSTER_ARN=$DR_CLUSTER_ARN"
 echo "INFO - PRIMARY_SECURITY_GROUP=$PRIMARY_SECURITY_GROUP"

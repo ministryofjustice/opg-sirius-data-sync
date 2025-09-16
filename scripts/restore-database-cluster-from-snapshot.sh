@@ -2,23 +2,14 @@
 
 # Required Environment Variables
 # ACCOUNT_NAME=preproduction
-# AWS_DEFAULT_REGION=eu-west-11
+# AWS_DEFAULT_REGION=eu-west-1
 # DATABASE=api
 # ENVIRONMENT_NAME=preproduction
-
-# Optional Envionment Variables
-# SKIP_SNAPSHOT=false
-# DATABASE_VERSION=13.6
 
 set -e
 set -o pipefail
 
 . common.sh
-
-if [ "$ENVIRONMENT_NAME" = "production" ]; then
-    echo "ERROR - You cannot restore the production database."
-    exit 1
-fi
 
 if [ -z "$ACCOUNT_NAME" ]; then
     echo "ERROR - You need to set the ACCOUNT_NAME environment variable."
@@ -30,6 +21,22 @@ if [ -z "$SKIP_SNAPSHOT" ]; then
 fi
 
 . restore-database-methods.sh
+
+# Lookup Current Database Engine Version
+DATABASE_VERSION=$(aws rds describe-db-clusters \
+    --db-cluster-identifier "$DATABASE_CLUSTER" \
+    --query=DBClusters[0].EngineVersion \
+    --output text)
+check_look_up_exists "$DATABASE_VERSION"
+
+# Lookup Current Cluster Parameter Group
+PARAMETER_GROUP=$(aws rds describe-db-clusters \
+    --db-cluster-identifier "$DATABASE_CLUSTER" \
+    --query=DBClusters[0].DBClusterParameterGroup \
+    --output text)
+check_look_up_exists "$PARAMETER_GROUP"
+
+echo "INFO - Database Version set to $DATABASE_VERSION"
 
 echo "INFO - Restoring $DATABASE_CLUSTER from $LOCAL_SNAPSHOT"
 echo "INFO - Removing Deletion Protection"

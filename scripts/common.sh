@@ -13,15 +13,6 @@ if [ -z "$DATABASE" ]; then
     exit 1
 fi
 
-if [ -z "$DATABASE_VERSION" ]; then
-  DATABASE_VERSION="13.7"
-fi
-
-if [ -z "$PARAMETER_GROUP" ]; then
-  PARAMETER_GROUP="default.aurora-postgresql13"
-fi
-
-echo "INFO - Database Version set to $DATABASE_VERSION"
 DATABASE_CLUSTER=$DATABASE-$ENVIRONMENT_NAME
 echo "INFO - DATABASE_CLUSTER set to $DATABASE_CLUSTER"
 
