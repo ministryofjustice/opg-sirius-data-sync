@@ -88,6 +88,10 @@ control 'Database Sync' do
     it { should exist }
     its('mode') { should cmp '0644'}
   end
+  describe file('/app/data-access.sql') do
+    it { should exist }
+    its('mode') { should cmp '0644'}
+  end
   describe file('/app/search-app.sql') do
     it { should exist }
     its('mode') { should cmp '0644'}

@@ -11,12 +11,16 @@ create_permissions() {
     psql -U $PGUSER --dbname=$DATABASE_NAME -v user_name=$USER_NAME -v database_name=$DATABASE_NAME --file=./"$USER_NAME".sql 2> /dev/null
 }
 
+DATA_ACCESS_ROLE="data-access"
 SEARCH_APP_USER="search-app"
 SIRIUS_APP_USER="sirius-app"
 SUPERVISION_FINANCE_ADMIN_APP_USER="supervision-finance-admin-app"
 SUPERVISION_FINANCE_APP_USER="supervision-finance-app"
 OPERATOR_ROLE="operator"
 
+
+# Create Search App User
+create_login_role $DATA_ACCESS_ROLE $DATA_ACCESS_PASSWORD
 
 # Create Search App User
 create_login_role $SEARCH_APP_USER $SEARCH_APP_USER_PASSWORD
@@ -35,6 +39,9 @@ create_login_role $OPERATOR_ROLE $OPERATOR_PASSWORD
 
 # Revoke Create on Public
 psql -U $PGUSER --dbname=$DATABASE_NAME --command='REVOKE CREATE ON SCHEMA public FROM PUBLIC;'
+
+# Grant Search App User Permissions
+create_permissions $DATA_ACCESS_ROLE $DATABASE_NAME
 
 # Grant Search App User Permissions
 create_permissions $SEARCH_APP_USER $DATABASE_NAME
