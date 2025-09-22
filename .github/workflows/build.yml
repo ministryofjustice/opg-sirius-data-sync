@@ -31,15 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: Extract branch name
-        run: |
-          if [ "${{ github.head_ref }}" == "" ]; then
-            echo BRANCH_NAME=main >> $GITHUB_ENV
-          else
-            echo BRANCH_NAME=$(echo ${{ github.head_ref }} | sed 's/\//-/g') >> $GITHUB_ENV
-          fi
-        id: extract_branch
-
       - name: Set up Docker
         run: |
           echo '{"experimental": true, "features": { "containerd-snapshotter": true }}' | sudo tee -a /etc/docker/daemon.json
@@ -117,7 +108,8 @@ jobs:
           DATA_SYNC_ECR_REPOSITORY: sirius/data-sync
         run: |
           docker tag $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:${{ needs.create-tag.outputs.tag }}
-          if [ $BRANCH_NAME == "main" ]; then
+          if ${{ github.ref_name == 'main' }}
+          then
             docker tag $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:main-${{ needs.create-tag.outputs.tag }}
             docker tag $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:latest $ECR_REGISTRY/$DATA_SYNC_ECR_REPOSITORY:main-${{ needs.create-tag.outputs.tag }}-${{ needs.create-tag.outputs.timestamp }}
             # We want all of the tags pushed
