@@ -104,7 +104,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::311462405659:role/sirius-component-ecr-role
           role-session-name: opg-data-sync-github-actions-ecr-push
-          role-duration-seconds: 900
+          role-duration-seconds: 120
           aws-region: eu-west-1
 
       - name: ECR Login
@@ -150,19 +150,17 @@ jobs:
     name: Push Version to Parameter Store & Trigger Deploy
     runs-on: ubuntu-latest
     needs: [create-tag, end_of_pr_workflow]
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
+      - name: Configure OIDC AWS credentials for SSM
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
+          role-to-assume: arn:aws:iam::679638075911:role/sirius-component-ssm-role
+          role-session-name: opg-data-sync-github-actions-ssm-push
+          role-duration-seconds: 60
           aws-region: eu-west-1
-          role-to-assume: arn:aws:iam::997462338508:role/sirius-actions-ci
-          role-duration-seconds: 3600
-          role-session-name: GitHubActions
 
       - name: Install AWS CLI
         id: install-aws-cli
@@ -172,6 +170,6 @@ jobs:
         run: |
           aws ssm put-parameter --name "opg-sirius-data-sync-latest-green-build" --type "String" --value "${{ needs.create-tag.outputs.tag }}" --overwrite --region=eu-west-1
 
-      - name: Trigger Dev Deploy
-        shell: bash
-        run: curl -u ${{ secrets.JENKINS_API_USER }}:${{ secrets.JENKINS_API_TOKEN }} "https://${{ secrets.JENKINS_URL }}/job/Sirius/job/Deploy_to_Development/build?token=${{ secrets.JENKINS_API_TOKEN_NAME }}&cause=Triggered+by+opg-sirius-data-sync"
+      # - name: Trigger Dev Deploy
+      #   shell: bash
+      #   run: curl -u ${{ secrets.JENKINS_API_USER }}:${{ secrets.JENKINS_API_TOKEN }} "https://${{ secrets.JENKINS_URL }}/job/Sirius/job/Deploy_to_Development/build?token=${{ secrets.JENKINS_API_TOKEN_NAME }}&cause=Triggered+by+opg-sirius-data-sync"
