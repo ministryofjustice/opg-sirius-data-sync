@@ -6,12 +6,12 @@ services:
       context: .
 
   postgresql:
-    image: postgres:13-alpine
+    image: postgres:14-alpine
     environment:
       POSTGRES_USER: opgadmin
       POSTGRES_PASSWORD: NotARealPassword123
     healthcheck:
-      test: pg_isready --username=opgadmin --dbname=NotARealPassword123
+      test: pg_isready --username=opgadmin --dbname=api
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,10 +35,11 @@ services:
       PGPASSWORD: NotARealPassword123
       PGUSER: opgadmin
       DATABASE_NAME: api
-      DATA_ACCESS_PASSWORD: NotARealSearchPassword123
+      DATA_ACCESS_PASSWORD: NotARealDataAccessPassword123
       SEARCH_APP_USER_PASSWORD: NotARealSearchPassword123
       SIRIUS_APP_USER_PASSWORD: NotARealSiriusPassword123
       SUPERVISION_FINANCE_APP_USER_PASSWORD: NotARealFinancePassword123
+      SUPERVISION_FINANCE_ADMIN_APP_USER_PASSWORD: NotARealFinanceAdminPassword123
       OPERATOR_PASSWORD: NotARealOperatorPassword123
     command: /app/create-roles.sh
 
