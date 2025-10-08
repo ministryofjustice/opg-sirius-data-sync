@@ -35,6 +35,7 @@ services:
       PGPASSWORD: NotARealPassword123
       PGUSER: opgadmin
       DATABASE_NAME: api
+      ASSIGNEES_ACCESS_PASSWORD: NotARealAssigneesAccessPassword123
       DATA_ACCESS_PASSWORD: NotARealDataAccessPassword123
       SEARCH_APP_USER_PASSWORD: NotARealSearchPassword123
       SIRIUS_APP_USER_PASSWORD: NotARealSiriusPassword123
