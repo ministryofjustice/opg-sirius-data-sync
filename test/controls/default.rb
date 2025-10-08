@@ -72,6 +72,10 @@ control 'Database Sync' do
     it { should exist }
     its('mode') { should cmp '0644'}
   end
+  describe file('/app/suspend-inactive-assignees.py') do
+    it { should exist }
+    its('mode') { should cmp '0644'}
+  end
   describe file('/app/create_role.sql') do
     it { should exist }
     its('mode') { should cmp '0644'}
@@ -85,6 +89,10 @@ control 'Database Sync' do
     its('mode') { should cmp '0755'}
   end
   describe file('/app/operator.sql') do
+    it { should exist }
+    its('mode') { should cmp '0644'}
+  end
+  describe file('/app/assignees-access.sql') do
     it { should exist }
     its('mode') { should cmp '0644'}
   end
