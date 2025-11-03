@@ -96,7 +96,7 @@ LOGGER.info("Getting users last logged in more than 3 months ago...")
 expiredUsers = getExpiredUsers()
 
 if not expiredUsers:
-    LOGGER.warning("No expired users found. Skipping suspention.")
+    LOGGER.info("No expired users found. Skipping suspention.")
 else:
     expiredEmails = [user['email']['S'] for user in expiredUsers]
     
