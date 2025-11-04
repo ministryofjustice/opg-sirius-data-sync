@@ -55,7 +55,7 @@ def suspendNologinAssignees(activeEmails):
             nologin_emails = list(set(unsuspended_assignees) - set(activeEmails))
             
             if nologin_emails:
-                query = "UPDATE assignees SET suspended = TRUE WHERE email = ANY(%s);"
+                query = "UPDATE assignees SET suspended = TRUE WHERE email = ANY(%s) AND type = 'assignee_user';"
                 cursor.execute(query, (nologin_emails,))
                 LOGGER.info(f"Suspended {len(nologin_emails)} assignees never logged in.")
             else:
