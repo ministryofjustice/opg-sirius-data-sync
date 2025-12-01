@@ -49,7 +49,7 @@ def suspendNologinAssignees(activeEmails):
         
         LOGGER.info('Suspending assignees never logged in...')
         with connection.cursor() as cursor:
-            cursor.execute("SELECT email FROM assignees WHERE suspended = FALSE AND email IS NOT NULL AND type = 'assignee_user';")
+            cursor.execute("SELECT email FROM assignees WHERE suspended = FALSE AND email IS NOT NULL AND email != 'opgcasework@publicguardian.gov.uk' AND type = 'assignee_user';")
             unsuspended_assignees = [row[0] for row in cursor.fetchall()]
             
             nologin_emails = list(set(unsuspended_assignees) - set(activeEmails))
