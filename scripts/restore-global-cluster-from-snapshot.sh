@@ -264,8 +264,10 @@ do
     echo "INFO - Setting Instance Class."
     if [ $PRIMARY_POSITION == 0 ]; then
         INSTANCE_CLASS=$PRIMARY_INSTANCE_CLASS
+        PROMOTION_TIER=$PRIMARY_POSITION
     else
         INSTANCE_CLASS="db.serverless"
+        PROMOTION_TIER=$(($PRIMARY_POSITION+2))
     fi
     echo "INFO - Instance Class Set to: $INSTANCE"
     echo "INFO - Creating Cluster Instance $PRIMARY_INSTANCE in $PRIMARY_REGION${PRIMARY_AZ_ZONES[$PRIMARY_POSITION]}"
@@ -278,7 +280,7 @@ do
         --db-cluster-identifier $REGIONAL_CLUSTER \
         --ca-certificate-identifier rds-ca-rsa2048-g1 \
         --no-auto-minor-version-upgrade \
-        --promotion-tier $PRIMARY_POSITION \
+        --promotion-tier $PROMOTION_TIER \
         --monitoring-interval 30 \
         --monitoring-role-arn $MONITORING_ROLE \
         --enable-performance-insights \
