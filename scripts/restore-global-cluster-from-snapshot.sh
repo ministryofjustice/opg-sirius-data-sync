@@ -261,17 +261,26 @@ echo "INFO - Creating Multi AZ Instances for $DATABASE_CLUSTER"
 PRIMARY_POSITION=0
 for PRIMARY_INSTANCE in $PRIMARY_INSTANCES
 do
-    echo "Creating Cluster Instance $PRIMARY_INSTANCE in $PRIMARY_REGION${PRIMARY_AZ_ZONES[$PRIMARY_POSITION]}"
+    echo "INFO - Setting Instance Class."
+    if [ $PRIMARY_POSITION == 0 ]; then
+        INSTANCE_CLASS=$PRIMARY_INSTANCE_CLASS
+        PROMOTION_TIER=$PRIMARY_POSITION
+    else
+        INSTANCE_CLASS="db.serverless"
+        PROMOTION_TIER=$(($PRIMARY_POSITION+2))
+    fi
+    echo "INFO - Instance Class Set to: $INSTANCE"
+    echo "INFO - Creating Cluster Instance $PRIMARY_INSTANCE in $PRIMARY_REGION${PRIMARY_AZ_ZONES[$PRIMARY_POSITION]}"
     aws rds create-db-instance \
         --region $PRIMARY_REGION \
         --db-instance-identifier $PRIMARY_INSTANCE \
-        --db-instance-class $PRIMARY_INSTANCE_CLASS \
+        --db-instance-class $INSTANCE_CLASS \
         --engine aurora-postgresql \
         --availability-zone $PRIMARY_REGION${PRIMARY_AZ_ZONES[$PRIMARY_POSITION]} \
         --db-cluster-identifier $REGIONAL_CLUSTER \
         --ca-certificate-identifier rds-ca-rsa2048-g1 \
         --no-auto-minor-version-upgrade \
-        --promotion-tier 0 \
+        --promotion-tier $PROMOTION_TIER \
         --monitoring-interval 30 \
         --monitoring-role-arn $MONITORING_ROLE \
         --enable-performance-insights \
@@ -333,17 +342,24 @@ echo "INFO - Creating DR Region Instances for $DATABASE_CLUSTER"
 DR_POSITION=0
 for DR_INSTANCE in $DR_INSTANCES
 do
-    echo "Creating DR Region Cluster Instance $DR_INSTANCE in $DR_REGION${DR_AZ_ZONES[$DR_POSITION]}"
+    echo "INFO - Creating DR Region Cluster Instance $DR_INSTANCE in $DR_REGION${DR_AZ_ZONES[$DR_POSITION]}"
+    echo "INFO - Setting Instance Class."
+    if [ $DR_POSITION == 0 ]; then
+        INSTANCE_CLASS=$DR_INSTANCE_CLASS
+    else
+        INSTANCE_CLASS="db.serverless"
+    fi
+    echo "INFO - Instance Class Set to: $INSTANCE"
     aws rds create-db-instance \
         --region $DR_REGION \
         --db-instance-identifier $DR_INSTANCE \
-        --db-instance-class $DR_INSTANCE_CLASS \
+        --db-instance-class $INSTANCE_CLASS \
         --engine aurora-postgresql \
         --availability-zone $DR_REGION${DR_AZ_ZONES[$DR_POSITION]} \
         --db-cluster-identifier $REGIONAL_CLUSTER \
         --ca-certificate-identifier rds-ca-rsa2048-g1 \
         --no-auto-minor-version-upgrade \
-        --promotion-tier 0 \
+        --promotion-tier $DR_POSITION \
         --monitoring-interval 30 \
         --monitoring-role-arn $MONITORING_ROLE \
         --enable-performance-insights \
