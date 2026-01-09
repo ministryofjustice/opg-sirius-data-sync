@@ -112,6 +112,14 @@ control 'Database Sync' do
     it { should exist }
     its('mode') { should cmp '0644'}
   end
+  describe file('/app/table-deletion.sh') do
+    it { should exist }
+    its('mode') { should cmp '0755'}
+  end
+  describe file('/app/table-deletion.sql') do
+    it { should exist }
+    its('mode') { should cmp '0644'}
+  end
 end
 
 control 'AWS CLI' do
