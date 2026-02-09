@@ -11,3 +11,8 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA supervision_finance GRANT USAGE, SELECT ON SE
 GRANT USAGE ON SCHEMA public TO :"user_name";
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO :"user_name";
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO :"user_name";
+
+/* supervision schema read access */
+GRANT USAGE ON SCHEMA supervision TO :"user_name";
+GRANT SELECT ON ALL TABLES IN SCHEMA supervision TO :"user_name";
+ALTER DEFAULT PRIVILEGES IN SCHEMA supervision GRANT SELECT ON TABLES TO :"user_name";
