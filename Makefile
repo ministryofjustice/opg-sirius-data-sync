@@ -20,6 +20,12 @@ test-role-setup:
 	docker compose run --rm create-roles
 	docker compose down
 
+test-dms-setup:
+	docker compose up --wait -d postgresql
+	docker compose run --rm create-database
+	docker compose run --rm dms-setup
+	docker compose down
+
 test-database-tuning:
 	docker compose up --wait -d postgresql
 	docker compose run --rm create-database
