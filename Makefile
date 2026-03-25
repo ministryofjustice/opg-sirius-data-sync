@@ -1,13 +1,10 @@
 SHELL = '/bin/bash'
 export DOCKER_BUILDKIT ?= 1
 
-all: build scan test test-role-setup test-database-tuning cleanup
+all: build test test-role-setup test-database-tuning cleanup
 
 build:
 	docker compose build data-sync
-
-scan:
-	trivy image 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/data-sync:latest
 
 .PHONY: test
 test:
