@@ -67,7 +67,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@89a39a4e59826350b863aa6b6252a07ad50cf83e # v4.32.4
         if: always()
         with:
-          sarif_file: 'test-results/snyk-results.sarif'
+          sarif_file: 'test-results/snyk.sarif'
 
       - name: Install Inspec for Image Tests
         run: |
