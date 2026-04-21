@@ -44,7 +44,7 @@ echo "INFO - Upgrading Database Cluster $DATABASE_CLUSTER to PostgreSQL $TARGET_
 aws rds modify-db-cluster --db-cluster-identifier $DATABASE_CLUSTER \
     --allow-major-version-upgrade \
     --engine-version $TARGET_VERSION \
-    --db-cluster-parameter-group-name aurora-postgresql$TARGET_VERSION-ssl \
+    --db-cluster-parameter-group-name aurora-postgresql$TARGET_VERSION-sirius \
     --db-instance-parameter-group-name default.aurora-postgresql$TARGET_VERSION \
     --apply-immediately
 
