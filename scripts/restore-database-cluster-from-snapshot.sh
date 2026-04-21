@@ -22,18 +22,23 @@ fi
 
 . restore-database-methods.sh
 
-# Lookup Current Database Engine Version
-DATABASE_VERSION=$(aws rds describe-db-clusters \
-    --db-cluster-identifier "$DATABASE_CLUSTER" \
-    --query=DBClusters[0].EngineVersion \
-    --output text)
-check_look_up_exists "$DATABASE_VERSION"
+# Check if DATABASE_VERSION is set for restore, otherwise look it up, used for restore and upgrade.
+if [ -z "$DATABASE_VERSION" ]; then
+  # Lookup Current Database Engine Version
+    DATABASE_VERSION=$(aws rds describe-db-clusters \
+        --db-cluster-identifier "$DATABASE_CLUSTER" \
+        --query=DBClusters[0].EngineVersion \
+        --output text)
+fi
 
-# Lookup Current Cluster Parameter Group
-PARAMETER_GROUP=$(aws rds describe-db-clusters \
-    --db-cluster-identifier "$DATABASE_CLUSTER" \
-    --query=DBClusters[0].DBClusterParameterGroup \
-    --output text)
+check_look_up_exists "$DATABASE_VERSION"
+if [ -z "$PARAMETER_GROUP" ]; then
+    # Lookup Current Cluster Parameter Group
+    PARAMETER_GROUP=$(aws rds describe-db-clusters \
+        --db-cluster-identifier "$DATABASE_CLUSTER" \
+        --query=DBClusters[0].DBClusterParameterGroup \
+        --output text)
+fi
 check_look_up_exists "$PARAMETER_GROUP"
 
 echo "INFO - Database Version set to $DATABASE_VERSION"
@@ -84,7 +89,7 @@ aws rds restore-db-cluster-from-snapshot \
     --db-cluster-identifier "$DATABASE_CLUSTER" \
     --snapshot-identifier "$LOCAL_SNAPSHOT" \
     --engine aurora-postgresql \
-    --engine-version "$DATABASE_VERSION" \
+    # --engine-version "$DATABASE_VERSION" \
     --vpc-security-group-ids "$SECURITY_GROUP" \
     --db-subnet-group-name "$SUBNET_GROUP" \
     --db-cluster-parameter-group-name "$PARAMETER_GROUP" \
