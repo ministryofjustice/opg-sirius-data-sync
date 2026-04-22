@@ -22,16 +22,6 @@ fi
 
 . restore-database-methods.sh
 
-# Check if DATABASE_VERSION is set for restore, otherwise look it up, used for restore and upgrade.
-if [ -z "$DATABASE_VERSION" ]; then
-  # Lookup Current Database Engine Version
-    DATABASE_VERSION=$(aws rds describe-db-clusters \
-        --db-cluster-identifier "$DATABASE_CLUSTER" \
-        --query=DBClusters[0].EngineVersion \
-        --output text)
-fi
-
-check_look_up_exists "$DATABASE_VERSION"
 if [ -z "$PARAMETER_GROUP" ]; then
     # Lookup Current Cluster Parameter Group
     PARAMETER_GROUP=$(aws rds describe-db-clusters \
@@ -40,8 +30,6 @@ if [ -z "$PARAMETER_GROUP" ]; then
         --output text)
 fi
 check_look_up_exists "$PARAMETER_GROUP"
-
-echo "INFO - Database Version set to $DATABASE_VERSION"
 
 echo "INFO - Restoring $DATABASE_CLUSTER from $LOCAL_SNAPSHOT"
 echo "INFO - Removing Deletion Protection"
@@ -95,17 +83,6 @@ aws rds restore-db-cluster-from-snapshot \
     --deletion-protection \
     --enable-cloudwatch-logs-exports postgresql \
     --serverless-v2-scaling-configuration MinCapacity=$SERVERLESS_MIN_CAPACITY,MaxCapacity=$SERVERLESS_MAX_CAPACITY
-# aws rds restore-db-cluster-from-snapshot \
-#     --db-cluster-identifier "$DATABASE_CLUSTER" \
-#     --snapshot-identifier "$LOCAL_SNAPSHOT" \
-#     --engine aurora-postgresql \
-#     --engine-version "$DATABASE_VERSION" \
-#     --vpc-security-group-ids "$SECURITY_GROUP" \
-#     --db-subnet-group-name "$SUBNET_GROUP" \
-#     --db-cluster-parameter-group-name "$PARAMETER_GROUP" \
-#     --deletion-protection \
-#     --enable-cloudwatch-logs-exports postgresql \
-#     --serverless-v2-scaling-configuration MinCapacity=$SERVERLESS_MIN_CAPACITY,MaxCapacity=$SERVERLESS_MAX_CAPACITY
 wait_for_db_cluster_available "$DATABASE_CLUSTER"
 
 AZ_ZONES=(a b c)
