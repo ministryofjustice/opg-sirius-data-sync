@@ -22,21 +22,14 @@ fi
 
 . restore-database-methods.sh
 
-# Lookup Current Database Engine Version
-DATABASE_VERSION=$(aws rds describe-db-clusters \
-    --db-cluster-identifier "$DATABASE_CLUSTER" \
-    --query=DBClusters[0].EngineVersion \
-    --output text)
-check_look_up_exists "$DATABASE_VERSION"
-
-# Lookup Current Cluster Parameter Group
-PARAMETER_GROUP=$(aws rds describe-db-clusters \
-    --db-cluster-identifier "$DATABASE_CLUSTER" \
-    --query=DBClusters[0].DBClusterParameterGroup \
-    --output text)
+if [ -z "$PARAMETER_GROUP" ]; then
+    # Lookup Current Cluster Parameter Group
+    PARAMETER_GROUP=$(aws rds describe-db-clusters \
+        --db-cluster-identifier "$DATABASE_CLUSTER" \
+        --query=DBClusters[0].DBClusterParameterGroup \
+        --output text)
+fi
 check_look_up_exists "$PARAMETER_GROUP"
-
-echo "INFO - Database Version set to $DATABASE_VERSION"
 
 echo "INFO - Restoring $DATABASE_CLUSTER from $LOCAL_SNAPSHOT"
 echo "INFO - Removing Deletion Protection"
@@ -84,7 +77,6 @@ aws rds restore-db-cluster-from-snapshot \
     --db-cluster-identifier "$DATABASE_CLUSTER" \
     --snapshot-identifier "$LOCAL_SNAPSHOT" \
     --engine aurora-postgresql \
-    --engine-version "$DATABASE_VERSION" \
     --vpc-security-group-ids "$SECURITY_GROUP" \
     --db-subnet-group-name "$SUBNET_GROUP" \
     --db-cluster-parameter-group-name "$PARAMETER_GROUP" \

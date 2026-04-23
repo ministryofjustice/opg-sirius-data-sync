@@ -68,7 +68,7 @@ wait_for_db_cluster_available "eu-west-2" $REGIONAL_CLUSTER
 
 echo "INFO - Updating eu-west-1 Cluster Parameter Groups"
 aws rds modify-db-cluster --db-cluster-identifier $REGIONAL_CLUSTER \
-    --db-cluster-parameter-group-name aurora-postgresql$TARGET_VERSION-ssl \
+    --db-cluster-parameter-group-name aurora-postgresql$TARGET_VERSION-sirius \
     --db-instance-parameter-group-name default.aurora-postgresql$TARGET_VERSION \
     --region "eu-west-1" \
     --apply-immediately
@@ -77,7 +77,7 @@ echo "INFO - eu-west-1 Cluster Update Complete"
 
 echo "INFO - Updating eu-west-2 Cluster Parameter Groups"
 aws rds modify-db-cluster --db-cluster-identifier $REGIONAL_CLUSTER \
-    --db-cluster-parameter-group-name aurora-postgresql$TARGET_VERSION-ssl \
+    --db-cluster-parameter-group-name aurora-postgresql$TARGET_VERSION-sirius \
     --db-instance-parameter-group-name default.aurora-postgresql$TARGET_VERSION \
     --region "eu-west-2" \
     --apply-immediately
