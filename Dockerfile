@@ -1,12 +1,12 @@
-FROM alpine:3.22 AS builder
+FROM python:3.12-alpine AS builder
 
 RUN mkdir /install
-RUN apk update && apk add postgresql15-dev gcc python3-dev py3-pip musl-dev
+RUN apk update && apk add postgresql16-dev gcc musl-dev
 WORKDIR /install
 RUN pip install --prefix=/install psycopg2 psycopg
 
 
-FROM alpine:3.22
+FROM alpine:3
 
 COPY --from=builder /install/lib/python3.12/site-packages/ /usr/lib/python3.12/site-packages/
 WORKDIR /app/
@@ -14,7 +14,7 @@ WORKDIR /app/
 COPY scripts/requirements.txt /app/requirements.txt
 RUN apk --update --no-cache add \
   aws-cli \
-  postgresql15 \
+  postgresql16 \
   python3 \
   bash \
   curl \
@@ -25,7 +25,7 @@ RUN pip install --break-system-packages --no-cache-dir -r requirements.txt \
   && rm -rf /var/cache/apk/* /root/.cache/pip/*
 
 # Patch Vulnerable Packages
-RUN apk upgrade --no-cache busybox nghttp2-libs libcrypto3 libssl3 musl musl-utils
+RUN apk upgrade --no-cache busybox nghttp2-libs libcrypto3 libssl3 musl musl-utils zlib
 
 COPY scripts /app
 COPY sirius-roles /app

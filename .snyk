@@ -5,24 +5,4 @@ ignore:
         reason: Acceptable license
         expires: 2026-05-27T08:00:00Z
         created: 2026-03-27T10:00:00Z
-  SNYK-PYTHON-URLLIB3-10390194:
-    - '*':
-        reason: Known issue in data sync container image
-        expires: 2026-05-27T08:00:00Z
-        created: 2026-03-27T10:00:00Z
-  SNYK-PYTHON-URLLIB3-14192442:
-    - '*':
-        reason: Known issue in data sync container image
-        expires: 2026-05-27T08:00:00Z
-        created: 2026-03-27T10:00:00Z
-  SNYK-PYTHON-URLLIB3-14192443:
-    - '*':
-        reason: Known issue in data sync container image
-        expires: 2026-05-27T08:00:00Z
-        created: 2026-03-27T10:00:00Z
-  SNYK-PYTHON-URLLIB3-14896210:
-    - '*':
-        reason: Known issue in data sync container image
-        expires: 2026-05-27T08:00:00Z
-        created: 2026-03-27T10:00:00Z
 patch: {}
