@@ -40,6 +40,15 @@ DR_CLUSTER_ARN=$(aws rds describe-db-clusters \
     --output text)
 check_look_up_exists "$DR_CLUSTER_ARN"
 
+if [ -z "$DATABASE_VERSION" ]; then
+    # Lookup Current Cluster Parameter Group
+    DATABASE_VERSION=$(aws rds describe-db-clusters \
+        --db-cluster-identifier "$DATABASE_CLUSTER" \
+        --query=DBClusters[0].EngineVersion \
+        --output text)
+fi
+check_look_up_exists "$DATABASE_VERSION"
+
 if [ -z "$PARAMETER_GROUP" ]; then
     # Lookup Current Cluster Parameter Group
     PARAMETER_GROUP=$(aws rds describe-db-clusters \
@@ -141,6 +150,7 @@ echo "INFO - REGIONAL_CLUSTER: $REGIONAL_CLUSTER"
 echo "INFO - SNAPSHOT_FOR_RESTORE: $SNAPSHOT_FOR_RESTORE"
 echo "INFO - Cluster Config:-"
 echo "INFO - PARAMETER_GROUP=$PARAMETER_GROUP"
+echo "INFO - DATABASE_VERSION=$DATABASE_VERSION"
 echo "INFO - PRIMARY_CLUSTER_ARN=$PRIMARY_CLUSTER_ARN"
 echo "INFO - DR_CLUSTER_ARN=$DR_CLUSTER_ARN"
 echo "INFO - PRIMARY_SECURITY_GROUP=$PRIMARY_SECURITY_GROUP"
@@ -239,6 +249,7 @@ aws rds restore-db-cluster-from-snapshot \
     --db-cluster-parameter-group-name $PARAMETER_GROUP \
     --snapshot-identifier $SNAPSHOT_FOR_RESTORE \
     --engine aurora-postgresql \
+    --engine-version $DATABASE_VERSION \
     --vpc-security-group-ids $PRIMARY_SECURITY_GROUP \
     --db-subnet-group-name $PRIMARY_SUBNET_GROUP \
     --deletion-protection \
@@ -317,6 +328,7 @@ aws rds create-db-cluster \
     --deletion-protection \
     --enable-cloudwatch-logs-exports postgresql \
     --engine aurora-postgresql \
+    --engine-version $DATABASE_VERSION \
     --global-cluster-identifier $GLOBAL_CLUSTER \
     --kms-key-id alias/aws/rds \
     --source-region $PRIMARY_REGION \
