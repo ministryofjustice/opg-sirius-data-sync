@@ -43,7 +43,8 @@ check_look_up_exists "$DR_CLUSTER_ARN"
 if [ -z "$DATABASE_VERSION" ]; then
     # Lookup Current Cluster Parameter Group
     DATABASE_VERSION=$(aws rds describe-db-clusters \
-        --db-cluster-identifier "$DATABASE_CLUSTER" \
+        --region $PRIMARY_REGION \
+        --db-cluster-identifier "$REGIONAL_CLUSTER" \
         --query=DBClusters[0].EngineVersion \
         --output text)
 fi
@@ -52,7 +53,8 @@ check_look_up_exists "$DATABASE_VERSION"
 if [ -z "$PARAMETER_GROUP" ]; then
     # Lookup Current Cluster Parameter Group
     PARAMETER_GROUP=$(aws rds describe-db-clusters \
-        --db-cluster-identifier "$DATABASE_CLUSTER" \
+        --region $PRIMARY_REGION \
+        --db-cluster-identifier "$REGIONAL_CLUSTER" \
         --query=DBClusters[0].DBClusterParameterGroup \
         --output text)
 fi
@@ -259,7 +261,7 @@ wait_for_db_cluster_available $PRIMARY_REGION $REGIONAL_CLUSTER
 
 # Add Instances to $PRIMARY_REGION Cluster
 PRIMARY_AZ_ZONES=(a b c)
-echo "INFO - Creating Multi AZ Instances for $DATABASE_CLUSTER"
+echo "INFO - Creating Multi AZ Instances for $REGIONAL_CLUSTER"
 PRIMARY_POSITION=0
 for PRIMARY_INSTANCE in $PRIMARY_INSTANCES
 do
@@ -333,14 +335,14 @@ aws rds create-db-cluster \
     --kms-key-id alias/aws/rds \
     --source-region $PRIMARY_REGION \
     --vpc-security-group-ids $DR_SECURITY_GROUP \
-    --serverless-v2-scaling-configuration MinCapacity=0.5,MaxCapacity=$SERVERLESS_MAX_CAPACITY
+    --serverless-v2-scaling-configuration MinCapacity=$SERVERLESS_MIN_CAPACITY,MaxCapacity=$SERVERLESS_MAX_CAPACITY
 
 wait_for_db_cluster_available $DR_REGION $REGIONAL_CLUSTER
 
 # Add Instances to $DR_REGION Cluster
 
 DR_AZ_ZONES=(a b c)
-echo "INFO - Creating DR Region Instances for $DATABASE_CLUSTER"
+echo "INFO - Creating DR Region Instances for $REGIONAL_CLUSTER"
 DR_POSITION=0
 for DR_INSTANCE in $DR_INSTANCES
 do
