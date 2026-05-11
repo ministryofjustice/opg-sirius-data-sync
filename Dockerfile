@@ -1,4 +1,4 @@
-FROM python:3.12-alpine AS builder
+FROM python:3.14-alpine AS builder
 
 RUN mkdir /install
 RUN apk update && apk add postgresql16-dev gcc musl-dev
