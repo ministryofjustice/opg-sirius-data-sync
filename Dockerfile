@@ -1,7 +1,7 @@
 FROM python:3.12-alpine AS builder
 
 RUN mkdir /install
-RUN apk update && apk add postgresql16-dev gcc musl-dev
+RUN apk update && apk add postgresql17-dev gcc musl-dev
 WORKDIR /install
 RUN pip install --prefix=/install psycopg2 psycopg
 
@@ -14,7 +14,7 @@ WORKDIR /app/
 COPY scripts/requirements.txt /app/requirements.txt
 RUN apk --update --no-cache add \
   aws-cli \
-  postgresql16 \
+  postgresql17 \
   python3 \
   bash \
   curl \
