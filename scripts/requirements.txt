@@ -1,4 +1,4 @@
 boto3
-requests==2.34.0
+requests==2.34.1
 requests_aws4auth
 urllib3==2.7.0
