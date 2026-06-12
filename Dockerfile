@@ -1,4 +1,4 @@
-FROM python:3.12-alpine AS builder
+FROM python:3.14-alpine AS builder
 
 RUN mkdir /install
 RUN apk update && apk add postgresql17-dev gcc musl-dev
@@ -8,7 +8,7 @@ RUN pip install --prefix=/install psycopg2 psycopg
 
 FROM alpine:3
 
-COPY --from=builder /install/lib/python3.12/site-packages/ /usr/lib/python3.12/site-packages/
+COPY --from=builder /install/lib/python3.14/site-packages/ /usr/lib/python3.14/site-packages/
 WORKDIR /app/
 
 COPY scripts/requirements.txt /app/requirements.txt
