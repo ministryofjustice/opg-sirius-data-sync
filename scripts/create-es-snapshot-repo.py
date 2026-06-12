@@ -40,7 +40,7 @@ payload = {
     "bucket": f"{REPO_BUCKET}",
     "region": "eu-west-1",
     "role_arn": f"arn:aws:iam::{ACCOUNT_ID}:role/{IAM_ROLE_NAME}",
-    "server_side_encryption": "AES256"
+    "server_side_encryption_type": "AES256"
   }
 }
 
