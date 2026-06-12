@@ -29,7 +29,7 @@ payload_readonly = {
     "bucket": f"{REPO_BUCKET}",
     "region": f"{AWS_REGION}",
     "role_arn": f"arn:aws:iam::{ACCOUNT_ID}:role/{IAM_ROLE_NAME}",
-    "server_side_encryption": "true",
+    "server_side_encryption": "AES256",
     "readonly": "true"
   }
 }
@@ -40,7 +40,7 @@ payload = {
     "bucket": f"{REPO_BUCKET}",
     "region": "eu-west-1",
     "role_arn": f"arn:aws:iam::{ACCOUNT_ID}:role/{IAM_ROLE_NAME}",
-    "server_side_encryption": "true"
+    "server_side_encryption": "AES256"
   }
 }
 
