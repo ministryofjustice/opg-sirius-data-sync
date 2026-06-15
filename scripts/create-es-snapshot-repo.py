@@ -11,6 +11,7 @@ ENVIRONMENT_NAME = os.environ['ENVIRONMENT_NAME']
 IAM_ROLE_NAME = os.environ['IAM_ROLE_NAME']
 ES_SNAPSHOT_REPO = os.environ['ES_SNAPSHOT_REPO']
 AWS_REGION = os.environ['AWS_DEFAULT_REGION']
+OPENSEARCH_VERSION = os.environ['OPENSEARCH_VERSION']
 
 credentials = boto3.Session().get_credentials()
 awsauth = AWS4Auth(
@@ -23,26 +24,48 @@ awsauth = AWS4Auth(
 
 url = f"https://{ES_HOST}/_snapshot/{ES_SNAPSHOT_REPO}"
 
-payload_readonly = {
-  "type": "s3",
-  "settings": {
-    "bucket": f"{REPO_BUCKET}",
-    "region": f"{AWS_REGION}",
-    "role_arn": f"arn:aws:iam::{ACCOUNT_ID}:role/{IAM_ROLE_NAME}",
-    "server_side_encryption": "AES256",
-    "readonly": "true"
+if OPENSEARCH_VERSION == "OpenSearch_2.19":
+  payload_readonly = {
+    "type": "s3",
+    "settings": {
+      "bucket": f"{REPO_BUCKET}",
+      "region": f"{AWS_REGION}",
+      "role_arn": f"arn:aws:iam::{ACCOUNT_ID}:role/{IAM_ROLE_NAME}",
+      "server_side_encryption": "true",
+      "readonly": "true"
+    }
   }
-}
 
-payload = {
-  "type": "s3",
-  "settings": {
-    "bucket": f"{REPO_BUCKET}",
-    "region": "eu-west-1",
-    "role_arn": f"arn:aws:iam::{ACCOUNT_ID}:role/{IAM_ROLE_NAME}",
-    "server_side_encryption_type": "AES256"
+  payload = {
+    "type": "s3",
+    "settings": {
+      "bucket": f"{REPO_BUCKET}",
+      "region": "eu-west-1",
+      "role_arn": f"arn:aws:iam::{ACCOUNT_ID}:role/{IAM_ROLE_NAME}",
+      "server_side_encryption": "true"
+    }
   }
-}
+else:
+  payload_readonly = {
+    "type": "s3",
+    "settings": {
+      "bucket": f"{REPO_BUCKET}",
+      "region": f"{AWS_REGION}",
+      "role_arn": f"arn:aws:iam::{ACCOUNT_ID}:role/{IAM_ROLE_NAME}",
+      "server_side_encryption_type": "AES256",
+      "readonly": "true"
+    }
+  }
+
+  payload = {
+    "type": "s3",
+    "settings": {
+      "bucket": f"{REPO_BUCKET}",
+      "region": "eu-west-1",
+      "role_arn": f"arn:aws:iam::{ACCOUNT_ID}:role/{IAM_ROLE_NAME}",
+      "server_side_encryption_type": "AES256"
+    }
+  }
 
 headers = {"Content-Type": "application/json"}
 
