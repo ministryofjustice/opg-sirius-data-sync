@@ -1,4 +1,4 @@
-FROM python:3.14-alpine AS builder
+FROM python:3.14-alpine@sha256:003970a263347645cd23d4f90929ad16ba7ce7d808ee4674ffcc93cb21cc289f AS builder
 
 RUN mkdir /install
 RUN apk update && apk add postgresql17-dev gcc musl-dev
@@ -6,7 +6,7 @@ WORKDIR /install
 RUN pip install --prefix=/install psycopg2 psycopg
 
 
-FROM alpine:3
+FROM alpine:3@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4
 
 COPY --from=builder /install/lib/python3.14/site-packages/ /usr/lib/python3.14/site-packages/
 WORKDIR /app/
