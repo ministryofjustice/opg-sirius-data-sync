@@ -19,11 +19,8 @@ function  backup_database_to_s3() {
     export PGUSER=$(echo $db_info | jq -r '.DBClusters[].MasterUsername')
     export PGHOST=$(echo $db_info | jq -r '.DBClusters[].Endpoint')
     export PGPASSWORD=$(aws secretsmanager get-secret-value --secret-id rds-${db_name}-development | jq -r '.SecretString')
-    echo "INFO - Backing up ${db_name} to local file ${env}-${db_name}-backup.sql"
-    pg_dump --clean --if-exists > ${env}-${db_name}-backup.sql
-    echo "INFO - Backup complete."
-    echo "INFO - Uploading to s3://${BUCKET}/database/${env}-${db_name}-backup.sql"
-    aws s3 cp --sse AES256 ${env}-${db_name}-backup.sql s3://${BUCKET}/database/${env}-${db_name}-backup.sql
+    echo "INFO - Backing up ${db_name} and streaming directly to s3://${BUCKET}/database/${env}-${db_name}-backup.sql"
+    pg_dump --clean --if-exists | aws s3 cp --sse AES256 - s3://${BUCKET}/database/${env}-${db_name}-backup.sql
     echo "INFO - Upload Complete"
 }
 
