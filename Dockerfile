@@ -8,6 +8,15 @@ RUN pip install --prefix=/install psycopg2 psycopg
 
 FROM alpine:3@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
 
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid 65532 \
+    data-sync-user
+
 COPY --from=builder /install/lib/python3.14/site-packages/ /usr/lib/python3.14/site-packages/
 WORKDIR /app/
 
@@ -31,3 +40,5 @@ COPY scripts /app
 COPY sirius-roles /app
 COPY sirius-maintenance /app
 COPY sirius-dms /app
+
+USER data-sync-user
