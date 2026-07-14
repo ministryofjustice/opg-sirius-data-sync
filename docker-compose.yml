@@ -18,6 +18,8 @@ services:
 
   create-database:
     image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/data-sync:latest
+    privileged: false
+    user: data-sync-user
     environment:
       PGHOST: postgresql
       PGPORT: 5432
@@ -29,6 +31,8 @@ services:
 
   create-roles:
     image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/data-sync:latest
+    privileged: false
+    user: data-sync-user
     environment:
       PGHOST: postgresql
       PGPORT: 5432
@@ -46,6 +50,8 @@ services:
 
   dms-setup:
     image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/data-sync:latest
+    privileged: false
+    user: data-sync-user
     environment:
       PGHOST: postgresql
       PGPORT: 5432
@@ -58,6 +64,8 @@ services:
 
   database-tuning:
     image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/data-sync:latest
+    privileged: false
+    user: data-sync-user
     environment:
       PGHOST: postgresql
       PGPORT: 5432
