@@ -66,6 +66,7 @@ echo "INFO - Creating snapshot copy $SNAPSHOT_COPY from snapshot $SOURCE_SNAPSHO
 aws rds copy-db-cluster-snapshot \
     --source-db-cluster-snapshot-identifier "$SOURCE_SNAPSHOT" \
     --target-db-cluster-snapshot-identifier "$SNAPSHOT_COPY" \
+    --copy-tags \
     --kms-key-id "arn:aws:kms:eu-west-1:649098267436:alias/rds-snapshot-reencryption-production"
 
 wait_for_snapshot_completion "$SNAPSHOT_COPY" 5
