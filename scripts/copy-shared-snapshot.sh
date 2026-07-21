@@ -29,6 +29,7 @@ echo "INFO - Creating local snapshot copy"
 aws rds copy-db-cluster-snapshot \
     --source-db-cluster-snapshot-identifier "$REMOTE_SNAPSHOT" \
     --target-db-cluster-snapshot-identifier "$LOCAL_SNAPSHOT" \
+    --copy-tags \
     --kms-key-id alias/aws/rds
 
 wait_for_snapshot_completion "$LOCAL_SNAPSHOT" 5

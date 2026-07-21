@@ -41,6 +41,7 @@ echo "INFO - Creating snapshot copy $SNAPSHOT_COPY_NAME from snapshot $LATEST_SN
 aws rds copy-db-cluster-snapshot \
     --source-db-cluster-snapshot-identifier "$LATEST_SNAPSHOT" \
     --target-db-cluster-snapshot-identifier "$SNAPSHOT_COPY_NAME" \
+    --copy-tags \
     --kms-key-id "$KMS_KEY_ALIAS"
 
 wait_for_snapshot_completion "$SNAPSHOT_COPY_NAME" 5
