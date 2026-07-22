@@ -29,7 +29,14 @@ echo "INFO - Creating local snapshot copy"
 aws rds copy-db-cluster-snapshot \
     --source-db-cluster-snapshot-identifier "$REMOTE_SNAPSHOT" \
     --target-db-cluster-snapshot-identifier "$LOCAL_SNAPSHOT" \
-    --copy-tags \
-    --kms-key-id alias/aws/rds
+    --kms-key-id alias/aws/rds \
+    --tags \
+    Key=application,Value="Sirius" \
+    Key=business-unit,Value="OPG" \
+    Key=environment-name,Value="$SOURCE_ENVIRONMENT_NAME" \
+    Key=infrastructure-support,Value="opgteam@digital.justice.gov.uk" \
+    Key=is-production,Value="false" \
+    Key=owner,Value="opgteam@digital.justice.gov.uk" \
+    Key=source-code,Value="https://github.com/ministryofjustice/opg-sirius-infrastructure"
 
 wait_for_snapshot_completion "$LOCAL_SNAPSHOT" 5
