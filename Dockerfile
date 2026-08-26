@@ -1,9 +1,14 @@
+FROM ghcr.io/astral-sh/uv:0.12.6@sha256:88bc6eb1ccd4b82efd0e1b530caffabddf50dc2bf612e66c14ea25b8ee8a4d3d AS uv
+
 FROM python:3.14-alpine@sha256:26730869004e2b9c4b9ad09cab8625e81d256d1ce97e72df5520e806b1709f92 AS builder
 
 RUN mkdir /install
 RUN apk update && apk add postgresql17-dev gcc musl-dev
 WORKDIR /install
-RUN pip install --prefix=/install psycopg2 psycopg
+COPY scripts/requirements-builder.txt requirements-builder.txt
+RUN --mount=from=uv,source=/uv,target=/bin/uv \
+    --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --prefix=/install --requirements requirements-builder.txt
 
 
 FROM alpine:3@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
@@ -22,16 +27,18 @@ WORKDIR /app/
 
 COPY scripts/requirements.txt /app/requirements.txt
 RUN apk --update --no-cache add \
-  aws-cli \
-  postgresql17 \
-  python3 \
-  bash \
-  curl \
-  jq \
-  py3-pip
+    aws-cli \
+    postgresql17 \
+    python3 \
+    bash \
+    curl \
+    jq \
+    py3-pip
 
-RUN pip install --break-system-packages --no-cache-dir -r requirements.txt \
-  && rm -rf /var/cache/apk/* /root/.cache/pip/*
+RUN --mount=from=uv,source=/uv,target=/bin/uv \
+    --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --break-system-packages --no-cache-dir --requirements requirements.txt \
+    && rm -rf /var/cache/apk/* /root/.cache/pip/*
 
 # Patch Vulnerable Packages
 RUN apk upgrade --no-cache busybox nghttp2-libs libcrypto3 libssl3 musl musl-utils zlib
