@@ -119,14 +119,7 @@ jobs:
         with:
           sarif_file: 'test-results/snyk.sarif'
 
-      - name: Install Inspec for Image Tests
-        run: |
-          curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec -v 5
-          inspec --chef-license=accept
-
       - name: Run Inspec Tests
-        env:
-          CHEF_LICENSE: accept
         run: |
           make test
           make cleanup

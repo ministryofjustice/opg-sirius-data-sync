@@ -7,6 +7,14 @@ services:
     read_only: true
     tmpfs:
       - /tmp:size=67108864
+    volumes:
+      - ./test/goss.yaml:/app/goss.yaml
+      - goss-bin:/goss-bin:ro
+
+  goss:
+    image: ghcr.io/goss-org/goss@sha256:8d3924f722a04a660e9e6c2403be0399d737c0187fc065714d26b992286c3f0a
+    volumes:
+      - goss-bin:/usr/bin/
 
   postgresql:
     image: postgres:17-alpine@sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193
@@ -76,3 +84,6 @@ services:
       PGUSER: opgadmin
       DATABASE_NAME: api
     command: /app/database-tuning.sh
+
+volumes:
+  goss-bin:

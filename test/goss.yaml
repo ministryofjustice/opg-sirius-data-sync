@@ -1,0 +1,176 @@
+file:
+  # Check Scripts for Data Sync
+  /app/backup-environment-to-s3.sh:
+    exists: true
+    path: /app/backup-environment-to-s3.sh
+    mode: "0755"
+  /app/common.sh:
+    exists: true
+    path: /app/common.sh
+    mode: "0644"
+  /app/common-multi-az.sh:
+    exists: true
+    path: /app/common-multi-az.sh
+    mode: "0644"
+  /app/copy-shared-snapshot.sh:
+    exists: true
+    path: /app/copy-shared-snapshot.sh
+    mode: "0755"
+  /app/create-es-snapshot-repo.py:
+    exists: true
+    path: /app/create-es-snapshot-repo.py
+    mode: "0644"
+  /app/create-es-snapshot-repo.sh:
+    exists: true
+    path: /app/create-es-snapshot-repo.sh
+    mode: "0755"
+  /app/create-es-snapshot.sh:
+    exists: true
+    path: /app/create-es-snapshot.sh
+    mode: "0755"
+  /app/create-remote-snapshot.py:
+    exists: true
+    path: /app/create-remote-snapshot.py
+    mode: "0644"
+  /app/create-shared-snapshot.sh:
+    exists: true
+    path: /app/create-shared-snapshot.sh
+    mode: "0755"
+  /app/restore-database-cluster-from-snapshot.sh:
+    exists: true
+    path: /app/restore-database-cluster-from-snapshot.sh
+    mode: "0755"
+  /app/restore-database-methods.sh:
+    exists: true
+    path: /app/restore-database-methods.sh
+    mode: "0755"
+  /app/restore-environment-from-s3.sh:
+    exists: true
+    path: /app/restore-environment-from-s3.sh
+    mode: "0755"
+  /app/restore-es-snapshot.sh:
+    exists: true
+    path: /app/restore-es-snapshot.sh
+    mode: "0755"
+  /app/restore-global-cluster-from-snapshot.sh:
+    exists: true
+    path: /app/restore-global-cluster-from-snapshot.sh
+    mode: "0755"
+  /app/s3-copy-wrapper.sh:
+    exists: true
+    path: /app/s3-copy-wrapper.sh
+    mode: "0755"
+  /app/upgrade-database-cluster.sh:
+    exists: true
+    path: /app/upgrade-database-cluster.sh
+    mode: "0755"
+  /app/upgrade-global-cluster.sh:
+    exists: true
+    path: /app/upgrade-global-cluster.sh
+    mode: "0755"
+  /app/documents.py:
+    exists: true
+    path: /app/documents.py
+    mode: "0644"
+  /app/suspend-inactive-assignees.py:
+    exists: true
+    path: /app/suspend-inactive-assignees.py
+    mode: "0644"
+  /app/create_role.sql:
+    exists: true
+    path: /app/create_role.sql
+    mode: "0644"
+  /app/create-roles.sh:
+    exists: true
+    path: /app/create-roles.sh
+    mode: "0755"
+  /app/database-tuning.sh:
+    exists: true
+    path: /app/database-tuning.sh
+    mode: "0755"
+  /app/operator.sql:
+    exists: true
+    path: /app/operator.sql
+    mode: "0644"
+  /app/assignees-access.sql:
+    exists: true
+    path: /app/assignees-access.sql
+    mode: "0644"
+  /app/data-access.sql:
+    exists: true
+    path: /app/data-access.sql
+    mode: "0644"
+  /app/search-app.sql:
+    exists: true
+    path: /app/search-app.sql
+    mode: "0644"
+  /app/sirius-app.sql:
+    exists: true
+    path: /app/sirius-app.sql
+    mode: "0644"
+  /app/supervision-finance-app.sql:
+    exists: true
+    path: /app/supervision-finance-app.sql
+    mode: "0644"
+  /app/table-deletion.sh:
+    exists: true
+    path: /app/table-deletion.sh
+    mode: "0755"
+  /app/table-deletion.sql:
+    exists: true
+    path: /app/table-deletion.sql
+    mode: "0644"
+  # Check AWS CLI is Installed
+  /usr/bin/aws:
+    exists: true
+    path: /usr/bin/aws
+    mode: "0755"
+  # Check cURL is Installed
+  /usr/bin/curl:
+    exists: true
+    path: /usr/bin/curl
+    mode: "0755"
+  # Check jq is Installed
+  /usr/bin/jq:
+    exists: true
+    path: /usr/bin/jq
+    mode: "0755"
+  # Check pg_dump is Installed
+  /usr/bin/pg_dump:
+    exists: true
+    path: /usr/bin/pg_dump
+    mode: "0777"
+command:
+  # Check Binaries Run
+  'aws --version':
+    exit-status: 0
+    exec: "aws --version"
+  'curl --version':
+    exit-status: 0
+    exec: "curl --version"
+  'jq --version':
+    exit-status: 0
+    exec: "jq --version"
+  'pg_dump --version':
+    exit-status: 0
+    exec: "pg_dump --version"
+  # Check Python Deps
+  'python3 --version':
+    exit-status: 0
+    exec: "python3 --version"
+  'pip3 list | grep boto3':
+    exit-status: 0
+    exec: "pip3 list | grep boto3"
+  'pip3 list | grep psycopg2':
+    exit-status: 0
+    exec: "pip3 list | grep psycopg2"
+  'pip3 list | grep requests':
+    exit-status: 0
+    exec: "pip3 list | grep requests"
+  'pip3 list | grep requests-aws4auth':
+    exit-status: 0
+    exec: "pip3 list | grep requests-aws4auth"
+  'python3 -c "import psycopg2"':
+    exit-status: 0
+    exec: 'python3 -c "import psycopg2"'
+
