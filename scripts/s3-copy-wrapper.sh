@@ -31,5 +31,5 @@ else
 fi
 
 echo "INFO - $COMMAND-ing $SOURCE_PATH to $DESTINATION_PATH"
-aws s3 $COMMAND $SOURCE_PATH $DESTINATION_PATH --sse $DRY_RUN_FLAG
+aws s3 $COMMAND $SOURCE_PATH $DESTINATION_PATH --sse --acl bucket-owner-full-control $DRY_RUN_FLAG
 echo "INFO - $COMMAND Complete"
