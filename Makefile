@@ -8,8 +8,9 @@ build:
 
 .PHONY: test
 test:
-	docker run --rm -d -i --name data-sync 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/data-sync:latest
-	inspec exec test -t docker://data-sync --chef-license=accept-silent --reporter cli junit:data-sync-inspec.xml
+	docker compose run -i -d --rm  --name goss goss
+	docker compose run --rm --name data-sync -i -d data-sync
+	docker compose exec -it data-sync /goss-bin/goss validate
 
 test-role-setup:
 	docker compose up --wait -d postgresql
@@ -30,4 +31,4 @@ test-database-tuning:
 	docker compose down
 
 cleanup:
-	docker rm --force data-sync
+	docker rm --force data-sync goss
