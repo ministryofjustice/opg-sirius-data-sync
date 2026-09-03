@@ -5,9 +5,11 @@ FROM python:3.14-alpine@sha256:26730869004e2b9c4b9ad09cab8625e81d256d1ce97e72df5
 RUN mkdir /install
 RUN apk update && apk add postgresql17-dev gcc musl-dev
 WORKDIR /install
-COPY scripts/requirements-builder.txt requirements-builder.txt
+COPY scripts/data-sync-builder.requirements data-sync-builder.requirements
+COPY scripts/data-sync-builder.requirements.lock data-sync-builder.requirements.lock
 RUN --mount=from=uv,source=/uv,target=/bin/uv \
     --mount=type=cache,target=/root/.cache/uv \
+    uv export --script data-sync-builder.requirements --frozen --no-editable -o requirements-builder.txt && \
     uv pip install --prefix=/install --requirements requirements-builder.txt
 
 
@@ -25,19 +27,21 @@ RUN adduser \
 COPY --from=builder /install/lib/python3.14/site-packages/ /usr/lib/python3.14/site-packages/
 WORKDIR /app/
 
-COPY scripts/requirements.txt /app/requirements.txt
 RUN apk --update --no-cache add \
-    aws-cli \
-    postgresql17 \
-    python3 \
-    bash \
-    curl \
-    jq \
-    py3-pip
+aws-cli \
+postgresql17 \
+python3 \
+bash \
+curl \
+jq \
+py3-pip
 
+COPY scripts/data-sync-script.requirements data-sync-script.requirements
+COPY scripts/data-sync-script.requirements.lock data-sync-script.requirements.lock
 RUN --mount=from=uv,source=/uv,target=/bin/uv \
     --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system --break-system-packages --no-cache-dir --requirements requirements.txt \
+    uv export --script data-sync-script.requirements --frozen --no-editable -o requirements-script.txt && \
+    uv pip install --system --break-system-packages --no-cache-dir --requirements requirements-script.txt \
     && rm -rf /var/cache/apk/* /root/.cache/pip/*
 
 # Patch Vulnerable Packages
