@@ -46,18 +46,19 @@ def suspendNologinAssignees(activeEmails):
         host=PG_HOST,
         port=PG_PORT
     ) as connection:
-        
+
         LOGGER.info('Suspending assignees never logged in...')
         with connection.cursor() as cursor:
             cursor.execute("SELECT email FROM assignees WHERE suspended = FALSE AND email IS NOT NULL AND email != 'opgcasework@publicguardian.gov.uk' AND type = 'assignee_user';")
             unsuspended_assignees = [row[0] for row in cursor.fetchall()]
-            
+
             nologin_emails = list(set(unsuspended_assignees) - set(activeEmails))
-            
+
             if nologin_emails:
-                query = "UPDATE assignees SET suspended = TRUE WHERE email = ANY(%s) AND type = 'assignee_user';"
+                query = "UPDATE assignees SET suspended = TRUE WHERE email = ANY(%s) AND type = 'assignee_user' RETURNING id;"
                 cursor.execute(query, (nologin_emails,))
-                LOGGER.info(f"Suspended {len(nologin_emails)} assignees never logged in.")
+                suspended_ids = [row[0] for row in cursor.fetchall()]
+                LOGGER.info(f"Suspended {len(suspended_ids)} assignees never logged in. IDs: {suspended_ids}")
             else:
                 LOGGER.info("No assignees never logged in found.")
 
