@@ -4,7 +4,7 @@ import os
 import psycopg
 import datetime
 import time
-from dateutil.relativedelta import relativedelta  
+from dateutil.relativedelta import relativedelta
 
 EXPIRE_DATE = (datetime.datetime.now().date() - relativedelta(months=3)).strftime("%Y-%m-%d")
 
@@ -58,7 +58,7 @@ def deleteExpiredUsers(items, batchSize = 25, max_retries=5):
                 {'DeleteRequest': {'Key': item}} for item in batch_items
             ]
         }
-        
+
         retries = 0
         while True:
             response = DYNAMO_CLIENT.batch_write_item(RequestItems=request_items)
@@ -86,11 +86,13 @@ def supendInactiveAssignees(expiredEmails):
         host=PG_HOST,
         port=PG_PORT
     ) as connection:
-        
+
         LOGGER.info(f'Suspending inactive {len(expiredEmails)} Assignees...')
         with connection.cursor() as cursor:
-            query = "UPDATE assignees SET suspended = TRUE WHERE email = ANY(%s) AND type = 'assignee_user';"
+            query = "UPDATE assignees SET suspended = TRUE WHERE email = ANY(%s) AND type = 'assignee_user' RETURNING id;"
             cursor.execute(query, (expiredEmails,))
+            suspended_ids = [row[0] for row in cursor.fetchall()]
+            LOGGER.info(f"Suspended {len(suspended_ids)} assignees. IDs: {suspended_ids}")
 
 LOGGER.info("Getting users last logged in more than 3 months ago...")
 expiredUsers = getExpiredUsers()
@@ -99,7 +101,7 @@ if not expiredUsers:
     LOGGER.info("No expired users found. Skipping suspention.")
 else:
     expiredEmails = [user['email']['S'] for user in expiredUsers]
-    
+
     supendInactiveAssignees(expiredEmails)
 
     LOGGER.info(f"Removing {len(expiredUsers)} expired users (from DynamoDB)...")
