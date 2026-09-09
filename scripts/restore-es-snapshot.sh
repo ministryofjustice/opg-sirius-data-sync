@@ -50,6 +50,9 @@ else
     exit 1
 fi
 
+echo "INFO - Waiting twenty seconds for indices to be deleted"
+sleep 20
+
 echo "INFO - Restoring Indices from snapshot"
 if curl -fsS -XPOST "https://$ES_VPC_ENDPOINT/_snapshot/$ES_SNAPSHOT_REPO/sync-snapshot/_restore";
 then
